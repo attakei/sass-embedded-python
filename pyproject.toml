@@ -1,0 +1,14 @@
+[project]
+name = "sass-embedded"
+version = "0.0.0"
+description = "Sass/SCSS compiler for Python using Dart Sass"
+readme = "README.rst"
+authors = [
+    { name = "Kazuya Takei", email = "myself@attakei.net" }
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
