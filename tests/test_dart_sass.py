@@ -21,6 +21,15 @@ def test_linux_release_object():
     assert e.sass_snapshot_path.name == "sass.snapshot"
 
 
+@pytest.mark.skipif('sys.platform != "darwin"')
+def test_macos_release_object():
+    r = P.Release.init()
+    assert r.os == "macos"
+    e = r.get_executable(P.resolve_bin_base_dir())
+    assert e.dart_vm_path.name == "dart"
+    assert e.sass_snapshot_path.name == "sass.snapshot"
+
+
 @pytest.mark.skipif('sys.platform != "win32"')
 def test_windows_release_object():
     r = P.Release.init()
