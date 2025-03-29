@@ -1,0 +1,58 @@
+name: Release version
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Push target of package registry.'
+        required: false
+        default: 'testpypi'
+
+jobs:
+  build-common:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Build distributes
+        run: |
+          uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist
+  build-platform:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        platform:
+          - 'win_amd64'
+          - 'win_arm64'
+          - 'manylinux2014_x86_64'
+          - 'manylinux2014_aarch64'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Build wheel
+        run: |
+          uv sync
+          BUILD_FOR_PLATFORM=${{ matrix.platform }} uv build --wheel
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 'dist-${{ matrix.platform }}'
+          path: dist
+  publish:
+    needs:
+      - 'build-common'
+      - 'build-platform'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - run: |
+          ls -lhR dist/

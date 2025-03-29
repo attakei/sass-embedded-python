@@ -17,10 +17,13 @@ build-backend = "hatchling.build"
 dev = [
     "doc8>=1.1.2",
     "esbonio>=0.16.5",
+    "hatchling>=1.27.0",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
     "ruff>=0.11.2",
 ]
+
+[tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.sdist]
 exclude = ["src/sass_embedded/dart_sass/_ext"]
