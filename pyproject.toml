@@ -12,3 +12,8 @@ dependencies = []
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "esbonio>=0.16.5",
+]
