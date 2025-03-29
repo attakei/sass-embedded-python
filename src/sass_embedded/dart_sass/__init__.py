@@ -46,7 +46,10 @@ def resolve_arch() -> ARCH_NAME:
 
 @dataclass
 class Release:
-    """Release data of Dart Sass."""
+    """Release data of Dart Sass.
+
+    This class manages information about release pack Dart Sass.
+    """
 
     os: OS_NAME
     arch: ARCH_NAME
@@ -76,24 +79,30 @@ class Release:
     def resolve_dir(self, base_dir: Path):
         return base_dir / self.fullname
 
-    def executor(self, base_dir: Path) -> Executor:
-        return Executor(base_dir=base_dir, release=self)
+    def get_executable(self, base_dir: Path) -> Executable:
+        return Executable(base_dir=base_dir, release=self)
 
 
 @dataclass
-class Executor:
+class Executable:
+    """Data for local files data of Dart Sass.
+
+    This class manages filepath and more about unpacked Dart Sass.
+    """
+
     base_dir: Path
     release: Release
 
     @property
     def dart_vm_path(self) -> Path:
         dir_ = self.release.resolve_dir(self.base_dir)
-        return dir_ / "src" / f"dart{'.exe' if self.release.os == 'windows' else ''}"
+        ext_ = ".exe" if self.release.os == "windows" else ""
+        return (dir_ / "src" / f"dart{ext_}").resolve()
 
     @property
     def sass_snapshot_path(self) -> Path:
         dir_ = self.release.resolve_dir(self.base_dir)
-        return dir_ / "src" / "sass.snapshot"
+        return (dir_ / "src" / "sass.snapshot").resolve()
 
 
 def resolve_bin_base_dir() -> Path:
