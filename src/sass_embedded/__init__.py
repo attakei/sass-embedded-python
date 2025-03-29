@@ -2,3 +2,7 @@
 
 __version__ = "0.0.0"
 __dart_sass_version__ = "1.86.0"
+
+from pathlib import Path
+
+package_root = Path(__file__).parent
