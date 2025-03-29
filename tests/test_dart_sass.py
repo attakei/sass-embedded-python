@@ -16,9 +16,15 @@ def test_relasename():
 def test_linux_release_object():
     r = P.Release.init()
     assert r.os == "linux"
+    e = r.executor(P.resolve_bin_base_dir())
+    assert e.dart_vm_path.name == "dart"
+    assert e.sass_snapshot_path.name == "sass.snapshot"
 
 
 @pytest.mark.skipif('sys.platform != "win32"')
 def test_windows_release_object():
     r = P.Release.init()
     assert r.os == "windows"
+    e = r.executor(P.resolve_bin_base_dir())
+    assert e.dart_vm_path.name == "dart.exe"
+    assert e.sass_snapshot_path.name == "sass.snapshot"

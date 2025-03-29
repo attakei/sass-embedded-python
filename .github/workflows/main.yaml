@@ -40,6 +40,7 @@ jobs:
       - name: 'Configure workspace'
         run: |
           uv sync --frozen
+          uv run python -m sass_embedded.dart_sass
       - name: 'Run test'
         run: |
           uv run pytest

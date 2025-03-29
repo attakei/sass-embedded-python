@@ -46,6 +46,8 @@ def resolve_arch() -> ARCH_NAME:
 
 @dataclass
 class Release:
+    """Release data of Dart Sass."""
+
     os: OS_NAME
     arch: ARCH_NAME
     version: str = __dart_sass_version__
@@ -74,6 +76,25 @@ class Release:
     def resolve_dir(self, base_dir: Path):
         return base_dir / self.fullname
 
+    def executor(self, base_dir: Path) -> Executor:
+        return Executor(base_dir=base_dir, release=self)
+
+
+@dataclass
+class Executor:
+    base_dir: Path
+    release: Release
+
+    @property
+    def dart_vm_path(self) -> Path:
+        dir_ = self.release.resolve_dir(self.base_dir)
+        return dir_ / "src" / f"dart{'.exe' if self.release.os == 'windows' else ''}"
+
+    @property
+    def sass_snapshot_path(self) -> Path:
+        dir_ = self.release.resolve_dir(self.base_dir)
+        return dir_ / "src" / "sass.snapshot"
+
 
 def resolve_bin_base_dir() -> Path:
     """Retrieve base directory to install Dart Sass binaries."""
@@ -90,6 +111,7 @@ def install():
         return
     logging.info("Fetching Dart Sass binary.")
     shutil.rmtree(release_dir, ignore_errors=True)
+    # TODO: Add error handling if it needs.
     resp = urlopen(release.archive_url)
     archive_path = Path(tempfile.mktemp())
     archive_path.write_bytes(resp.read())
