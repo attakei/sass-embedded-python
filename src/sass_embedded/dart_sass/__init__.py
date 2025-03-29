@@ -98,12 +98,12 @@ class Executable:
     def dart_vm_path(self) -> Path:
         dir_ = self.release.resolve_dir(self.base_dir)
         ext_ = ".exe" if self.release.os == "windows" else ""
-        return (dir_ / "src" / f"dart{ext_}").resolve()
+        return (dir_ / "dart-sass" / "src" / f"dart{ext_}").resolve()
 
     @property
     def sass_snapshot_path(self) -> Path:
         dir_ = self.release.resolve_dir(self.base_dir)
-        return (dir_ / "src" / "sass.snapshot").resolve()
+        return (dir_ / "dart-sass" / "src" / "sass.snapshot").resolve()
 
 
 def resolve_bin_base_dir() -> Path:
