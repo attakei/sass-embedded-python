@@ -21,3 +21,6 @@ dev = [
     "pytest>=8.3.5",
     "ruff>=0.11.2",
 ]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["src/sass_embedded/dart_sass/_ext"]
