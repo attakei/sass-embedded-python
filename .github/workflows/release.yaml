@@ -45,14 +45,24 @@ jobs:
         with:
           name: 'dist-${{ matrix.platform }}'
           path: dist
-  publish:
+  publish-test:
+    if: ${{ inputs.target }} == 'testpypi'
     needs:
       - 'build-common'
       - 'build-platform'
     runs-on: ubuntu-latest
+    environment:
+      name: '${{ inputs.target }}'
+      url: 'https://test.pypi.org/p/sass-embedded'
+    permissions:
+      id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: dist
+          merge-multiple: true
       - run: |
           ls -lhR dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
