@@ -79,7 +79,8 @@ class Release:
     def resolve_dir(self, base_dir: Path):
         return base_dir / self.fullname
 
-    def get_executable(self, base_dir: Path) -> Executable:
+    def get_executable(self, base_dir: Path | None = None) -> Executable:
+        base_dir = base_dir or resolve_bin_base_dir()
         return Executable(base_dir=base_dir, release=self)
 
 
