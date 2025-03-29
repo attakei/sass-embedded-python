@@ -29,6 +29,24 @@ def test_compile_string_sass(target: str):
     assert result == expect.read_text()
 
 
+@pytest.mark.parametrize("target", targets)
+def test_compile_file_scss(target: str, tmpdir: Path):
+    source = here / "test-basics" / f"{target}.scss"
+    expect = here / "test-basics" / f"{target}.css"
+    dest = tmpdir / f"{target}.css"
+    result = M.compile_file(source, dest, syntax="scss")
+    assert expect.read_text() in result.read_text()
+
+
+@pytest.mark.parametrize("target", targets)
+def test_compile_file_sass(target: str, tmpdir: Path):
+    source = here / "test-basics" / f"{target}.sass"
+    expect = here / "test-basics" / f"{target}.css"
+    dest = tmpdir / f"{target}.css"
+    result = M.compile_file(source, dest, syntax="sass")
+    assert expect.read_text() in result.read_text()
+
+
 @pytest.mark.parametrize(
     "source_path,load_dir",
     [
