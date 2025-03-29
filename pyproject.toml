@@ -15,5 +15,8 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "doc8>=1.1.2",
     "esbonio>=0.16.5",
+    "mypy>=1.15.0",
+    "pytest>=8.3.5",
 ]
