@@ -109,20 +109,3 @@ class Executable:
 def resolve_bin_base_dir() -> Path:
     """Retrieve base directory to install Dart Sass binaries."""
     return here / "_ext"
-
-
-def install():
-    """Install Dart Sass binary for local machine."""
-    release = Release.init()
-    release_dir = release.resolve_dir(resolve_bin_base_dir())
-    logging.debug(f"Find '{release_dir}'")
-    if release_dir.exists() and (release_dir / "src").exists():
-        logging.info("Dart Sass binary is already installed.")
-        return
-    logging.info("Fetching Dart Sass binary.")
-    shutil.rmtree(release_dir, ignore_errors=True)
-    # TODO: Add error handling if it needs.
-    resp = urlopen(release.archive_url)
-    archive_path = Path(tempfile.mktemp())
-    archive_path.write_bytes(resp.read())
-    shutil.unpack_archive(archive_path, release_dir, release.archive_format)
