@@ -21,7 +21,7 @@ jobs:
       - name: 'Run linters'
         run: |
           lefthook run pre-commit --all-files  prebuild:
-  prebuild:
+  test:
     needs: 'lint'
     runs-on: '${{ matrix.runner }}'
     strategy:
@@ -40,3 +40,6 @@ jobs:
       - name: 'Configure workspace'
         run: |
           uv sync --frozen
+      - name: 'Run test'
+        run: |
+          uv run pytest
