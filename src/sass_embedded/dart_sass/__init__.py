@@ -2,17 +2,25 @@
 
 from __future__ import annotations
 
+import logging
 import platform
+import shutil
+import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
+from urllib.request import urlopen
 
-from . import __dart_sass_version__, package_root
+from .. import __dart_sass_version__
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    pass
 
 OS_NAME = Literal["android", "linux", "macos", "windows"]
 ARCH_NAME = Literal["arm", "arm64", "ia32", "riscv64", "x64"]
+
+logger = logging.getLogger(__name__)
+here = Path(__file__).parent
 
 
 def resolve_os() -> OS_NAME:
@@ -46,6 +54,17 @@ class Release:
     def fullname(self) -> str:
         return f"{self.version}-{self.os}-{self.arch}"
 
+    @property
+    def archive_url(self) -> str:
+        """Retrieve URL for archive of GitHub Releases."""
+        ext = "zip" if self.os == "windows" else "tar.gz"
+        return f"https://github.com/sass/dart-sass/releases/download/{self.version}/dart-sass-{self.version}-{self.os}-{self.arch}.{ext}"
+
+    @property
+    def archive_format(self) -> str:
+        """String of ``shutil.unpack_archive``."""
+        return "zip" if self.os == "windows" else "gztar"
+
     @classmethod
     def init(cls) -> Release:
         os_name = resolve_os()
@@ -58,4 +77,20 @@ class Release:
 
 def resolve_bin_base_dir() -> Path:
     """Retrieve base directory to install Dart Sass binaries."""
-    return package_root / "dart-sass"
+    return here / "_ext"
+
+
+def install():
+    """Install Dart Sass binary for local machine."""
+    release = Release.init()
+    release_dir = release.resolve_dir(resolve_bin_base_dir())
+    logging.debug(f"Find '{release_dir}'")
+    if release_dir.exists() and (release_dir / "src").exists():
+        logging.info("Dart Sass binary is already installed.")
+        return
+    logging.info("Fetching Dart Sass binary.")
+    shutil.rmtree(release_dir, ignore_errors=True)
+    resp = urlopen(release.archive_url)
+    archive_path = Path(tempfile.mktemp())
+    archive_path.write_bytes(resp.read())
+    shutil.unpack_archive(archive_path, release_dir, release.archive_format)
