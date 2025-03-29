@@ -9,7 +9,7 @@ def test_relasename():
     assert r.fullname == f"{__dart_sass_version__}-linux-x64"
     bin_dir = r.resolve_dir(P.resolve_bin_base_dir())
     assert bin_dir.name == r.fullname
-    assert bin_dir.parent.name == "dart-sass"
+    assert bin_dir.parent.name == "_ext"
 
 
 @pytest.mark.skipif('sys.platform != "linux"')
