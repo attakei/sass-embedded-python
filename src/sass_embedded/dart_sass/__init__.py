@@ -4,12 +4,9 @@ from __future__ import annotations
 
 import logging
 import platform
-import shutil
-import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
-from urllib.request import urlopen
 
 from .. import __dart_sass_version__
 
