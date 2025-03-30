@@ -1,12 +1,12 @@
 import pytest
 
-from sass_embedded import __dart_sass_version__
+from sass_embedded._const import DART_SASS_VERSION
 from sass_embedded import dart_sass as P
 
 
 def test_relasename():
     r = P.Release("linux", "x64")
-    assert r.fullname == f"{__dart_sass_version__}-linux-x64"
+    assert r.fullname == f"{DART_SASS_VERSION}-linux-x64"
     bin_dir = r.resolve_dir(P.resolve_bin_base_dir())
     assert bin_dir.name == r.fullname
     assert bin_dir.parent.name == "_ext"

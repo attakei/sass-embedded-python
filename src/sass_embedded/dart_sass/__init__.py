@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from .. import __dart_sass_version__
+from .._const import DART_SASS_VERSION
 
 if TYPE_CHECKING:
     pass
@@ -50,7 +50,7 @@ class Release:
 
     os: OS_NAME
     arch: ARCH_NAME
-    version: str = __dart_sass_version__
+    version: str = DART_SASS_VERSION
 
     @property
     def fullname(self) -> str:
