@@ -1,12 +1,23 @@
 [project]
 name = "sass-embedded"
 version = "0.0.0"
-description = "Sass/SCSS compiler for Python using Dart Sass"
+description = "Sass/SCSS compile host using Dart Sass"
 readme = "README.rst"
 authors = [
     { name = "Kazuya Takei", email = "myself@attakei.net" }
 ]
 requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Utilities",
+]
 dependencies = []
 
 [build-system]
