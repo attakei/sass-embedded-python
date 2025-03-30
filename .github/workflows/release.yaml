@@ -66,3 +66,4 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
+          skip-existing: true
