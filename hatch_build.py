@@ -8,8 +8,8 @@ from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 RELEASE_TARGET = {
     "win_amd64": {"os": "windows", "arch": "x64"},
     "win_arm64": {"os": "windows", "arch": "arm64"},
-    "manylinux2014_x86_64": {"os": "linux", "arch": "x64"},
-    "manylinux2014_aarch64": {"os": "linux", "arch": "arm64"},
+    "manylinux_2_17_x86_64": {"os": "linux", "arch": "x64"},
+    "manylinux_2_17_aarch64": {"os": "linux", "arch": "arm64"},
 }
 
 here = Path(__file__).parent
