@@ -32,6 +32,13 @@ jobs:
           - 'windows-latest'
           - 'macos-latest'
           - 'macos-13'
+        python:
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
+        workspace: ['locked', 'latest']
     steps:
       - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
@@ -39,7 +46,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Configure workspace'
         run: |
-          uv sync --frozen
+          echo ${{ matrix.python }} > .python-version
+          uv sync --all-groups --all-extras ${{ (matrix.workspace == 'latest' && '-U') || '--frozen' }}
           uv run python -m sass_embedded.dart_sass
       - name: 'Run test'
         run: |
