@@ -13,14 +13,14 @@ from .._const import DART_SASS_VERSION
 if TYPE_CHECKING:
     pass
 
-OS_NAME = Literal["android", "linux", "macos", "windows"]
-ARCH_NAME = Literal["arm", "arm64", "ia32", "riscv64", "x64"]
+OSName = Literal["android", "linux", "macos", "windows"]
+ArchName = Literal["arm", "arm64", "ia32", "riscv64", "x64"]
 
 logger = logging.getLogger(__name__)
 here = Path(__file__).parent
 
 
-def resolve_os() -> OS_NAME:
+def resolve_os() -> OSName:
     """Retrieve os name as dart-sass specified."""
     os_name = platform.system()
     if os_name == "Darwin":
@@ -30,7 +30,7 @@ def resolve_os() -> OS_NAME:
     raise Exception(f"There is not dart-sass binary for {os_name}")
 
 
-def resolve_arch() -> ARCH_NAME:
+def resolve_arch() -> ArchName:
     """Retrieve cpu architecture string as dart-sass specified."""
     # NOTE: This logic is not all covered.
     arch_name = platform.machine()
@@ -48,8 +48,8 @@ class Release:
     This class manages information about release pack Dart Sass.
     """
 
-    os: OS_NAME
-    arch: ARCH_NAME
+    os: OSName
+    arch: ArchName
     version: str = DART_SASS_VERSION
 
     @property
