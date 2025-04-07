@@ -1,4 +1,11 @@
-"""Simple interface using Dart Sass."""
+"""Simple interface using Dart Sass.
+
+This module to work Dart Sass by same process of command line interface.
+
+Finally, this provides all features of `Dart Sass CLI`_ excluded something.
+
+.. _Dart Sass CLI: https://sass-lang.com/documentation/cli/dart-sass/
+"""
 
 from __future__ import annotations
 
@@ -46,7 +53,12 @@ class CLI:
 def compile_string(
     source: str, syntax: Syntax = "scss", load_paths: Optional[list[Path]] = None
 ) -> str:
-    """Convert from Sass/SCSS source to CSS."""
+    """Convert from Sass/SCSS source to CSS.
+
+    :params srouce: Source text. It must be format for Sass or SCSS.
+    :params syntax: Source format.
+    :params load_paths: List of addtional load path for Sass compile.
+    """
     cli = CLI(load_paths)
     proc = subprocess.run(
         cli.command_with_stdin(syntax),
@@ -62,7 +74,12 @@ def compile_file(
     dest: Path,
     load_paths: Optional[list[Path]] = None,
 ) -> Path:
-    """Convert from Sass/SCSS source to CSS."""
+    """Convert from Sass/SCSS source to CSS.
+
+    :params srouce: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
+    :params dest: Output destination.
+    :params load_paths: List of addtional load path for Sass compile.
+    """
     cli = CLI(load_paths)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True
@@ -82,6 +99,10 @@ def compile_directory(
     This use Many-to-Many Mode of Dart Sass CLI.
 
     See https://sass-lang.com/documentation/cli/dart-sass/#many-to-many-mode
+
+    :params srouce: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
+    :params dest: Output destination.
+    :params load_paths: List of addtional load path for Sass compile.
     """
 
     cli = CLI(load_paths)
