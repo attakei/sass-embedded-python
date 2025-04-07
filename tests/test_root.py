@@ -34,7 +34,7 @@ def test_compile_file_scss(target: str, tmpdir: Path):
     source = here / "test-basics" / f"{target}.scss"
     expect = here / "test-basics" / f"{target}.css"
     dest = tmpdir / f"{target}.css"
-    result = M.compile_file(source, dest, syntax="scss")
+    result = M.compile_file(source, dest)
     assert expect.read_text() in result.read_text()
 
 
@@ -43,7 +43,7 @@ def test_compile_file_sass(target: str, tmpdir: Path):
     source = here / "test-basics" / f"{target}.sass"
     expect = here / "test-basics" / f"{target}.css"
     dest = tmpdir / f"{target}.css"
-    result = M.compile_file(source, dest, syntax="sass")
+    result = M.compile_file(source, dest)
     assert expect.read_text() in result.read_text()
 
 
