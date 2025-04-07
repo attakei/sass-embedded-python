@@ -26,12 +26,20 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    {include-group = "docs-dev"},
     "doc8>=1.1.2",
     "esbonio>=0.16.5",
     "hatchling>=1.27.0",
     "mypy>=1.15.0",
     "pytest>=8.3.5",
     "ruff>=0.11.2",
+]
+docs = [
+    "sphinx>=7.4.7",
+]
+docs-dev = [
+    {include-group = "docs"},
+    "sphinx-autobuild>=2024.10.3",
 ]
 
 [tool.hatch.build.hooks.custom]
