@@ -59,3 +59,29 @@ def compile_file(
     if proc.returncode != 0:
         raise Exception(proc.stdout + proc.stderr)
     return Path(dest)
+
+
+def compile_directory(
+    source: Path,
+    dest: Path,
+    load_paths: Optional[list[Path]] = None,
+) -> list[Path]:
+    """Compile all source files on specified directory.
+
+    This use Many-to-Many Mode of Dart Sass CLI.
+
+    See https://sass-lang.com/documentation/cli/dart-sass/#many-to-many-mode
+    """
+
+    exe = Release.init().get_executable()
+    cmd = [
+        str(exe.dart_vm_path),
+        str(exe.sass_snapshot_path),
+        f"{source}:{dest}",
+    ]
+    if load_paths:
+        cmd += [f"--load-path={p}" for p in load_paths]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise Exception(proc.stdout + proc.stderr)
+    return [p for p in Path(dest).glob("*.css")]

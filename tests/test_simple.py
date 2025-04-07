@@ -1,4 +1,5 @@
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -75,3 +76,17 @@ def test_compile_string_moduled_sass():
         source.read_text(), syntax="scss", load_paths=[source.parent]
     )
     assert result == expect.read_text()
+
+
+def test_compile_directory(tmpdir: Path):
+    source = tmpdir / "source"
+    source.mkdir()
+    for s in (here / "test-basics").glob("*.scss"):
+        shutil.copy(s, source)
+    expected = tmpdir / "expected"
+    expected.mkdir()
+    for s in (here / "test-basics").glob("*.css"):
+        shutil.copy(s, expected)
+    output = tmpdir / "output"
+    output.mkdir()
+    result = M.compile_directory(source, output)
