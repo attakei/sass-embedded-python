@@ -8,7 +8,9 @@ author = "Kazuya Takei"
 release = importlib_metadata.version("sass_embedded")
 
 # -- General configuration
-extensions = []
+extensions = [
+    "sphinx.ext.autodoc",
+]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
