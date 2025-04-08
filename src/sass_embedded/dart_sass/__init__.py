@@ -1,4 +1,7 @@
-"""Controller of Dart Sass."""
+"""Controller of Dart Sass.
+
+This module works to
+"""
 
 from __future__ import annotations
 
@@ -49,16 +52,20 @@ class Release:
     """
 
     os: OSName
+    """Identify of OS."""
     arch: ArchName
+    """Identify of CPU architecture."""
     version: str = DART_SASS_VERSION
+    """Versionstring of Dart Sass."""
 
     @property
     def fullname(self) -> str:
+        """Full name of release's directory."""
         return f"{self.version}-{self.os}-{self.arch}"
 
     @property
     def archive_url(self) -> str:
-        """Retrieve URL for archive of GitHub Releases."""
+        """URL for archive of GitHub Releases."""
         ext = "zip" if self.os == "windows" else "tar.gz"
         return f"https://github.com/sass/dart-sass/releases/download/{self.version}/dart-sass-{self.version}-{self.os}-{self.arch}.{ext}"
 
@@ -69,14 +76,17 @@ class Release:
 
     @classmethod
     def init(cls) -> Release:
+        """Create object with current environment and registered version."""
         os_name = resolve_os()
         arch_name = resolve_arch()
         return cls(os=os_name, arch=arch_name)
 
     def resolve_dir(self, base_dir: Path):
+        """Retrieve full path of release's directory."""
         return base_dir / self.fullname
 
     def get_executable(self, base_dir: Path | None = None) -> Executable:
+        """Retrieve executable components object."""
         base_dir = base_dir or resolve_bin_base_dir()
         return Executable(base_dir=base_dir, release=self)
 
@@ -89,16 +99,20 @@ class Executable:
     """
 
     base_dir: Path
+    """Installed directory."""
     release: Release
+    """Release information of installed components."""
 
     @property
     def dart_vm_path(self) -> Path:
+        """Full path of Dart runtime."""
         dir_ = self.release.resolve_dir(self.base_dir)
         ext_ = ".exe" if self.release.os == "windows" else ""
         return (dir_ / "dart-sass" / "src" / f"dart{ext_}").resolve()
 
     @property
     def sass_snapshot_path(self) -> Path:
+        """Full path of compiled module."""
         dir_ = self.release.resolve_dir(self.base_dir)
         return (dir_ / "dart-sass" / "src" / "sass.snapshot").resolve()
 

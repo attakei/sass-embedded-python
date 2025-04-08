@@ -1,4 +1,8 @@
-"""Installation proc."""
+"""Installation proc.
+
+It works to fetch release archive from GitHub
+and install into library directory.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +28,11 @@ def clean():
 
 
 def install(os_name: Optional[str] = None, arch_name: Optional[str] = None):
+    """Install Dart Sass executable.
+
+    :param os_name: Target OS of archives.
+    :param arch_name: Target CPU architecture of archives.
+    """
     if os_name and arch_name:
         release = Release(os=os_name, arch=arch_name)  # type: ignore[arg-type]
     else:
