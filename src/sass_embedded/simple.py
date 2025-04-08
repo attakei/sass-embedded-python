@@ -55,9 +55,9 @@ def compile_string(
 ) -> str:
     """Convert from Sass/SCSS source to CSS.
 
-    :params srouce: Source text. It must be format for Sass or SCSS.
-    :params syntax: Source format.
-    :params load_paths: List of addtional load path for Sass compile.
+    :param srouce: Source text. It must be format for Sass or SCSS.
+    :param syntax: Source format.
+    :param load_paths: List of addtional load path for Sass compile.
     """
     cli = CLI(load_paths)
     proc = subprocess.run(
@@ -76,9 +76,9 @@ def compile_file(
 ) -> Path:
     """Convert from Sass/SCSS source to CSS.
 
-    :params srouce: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
-    :params dest: Output destination.
-    :params load_paths: List of addtional load path for Sass compile.
+    :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
+    :param dest: Output destination.
+    :param load_paths: List of addtional load path for Sass compile.
     """
     cli = CLI(load_paths)
     proc = subprocess.run(
@@ -100,9 +100,9 @@ def compile_directory(
 
     See https://sass-lang.com/documentation/cli/dart-sass/#many-to-many-mode
 
-    :params srouce: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
-    :params dest: Output destination.
-    :params load_paths: List of addtional load path for Sass compile.
+    :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
+    :param dest: Output destination.
+    :param load_paths: List of addtional load path for Sass compile.
     """
 
     cli = CLI(load_paths)
