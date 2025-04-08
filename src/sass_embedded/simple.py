@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 from .dart_sass import Executable, Release
 
 Syntax = Literal["scss", "sass", "css"]
+OutputStyle = Literal["expanded", "compressed"]
 
 
 class CLI:
@@ -26,18 +27,22 @@ class CLI:
 
     exe: Executable
     paths: list[Path]
+    style: OutputStyle
 
     def __init__(
         self,
         load_paths: Optional[list[Path]] = None,
+        output_style: OutputStyle = "expanded",
     ):
         self.exe = Release.init().get_executable()
         self.paths = load_paths or []
+        self.style = output_style
 
     def _command_base(self) -> list[str]:
         return [
             str(self.exe.dart_vm_path),
             str(self.exe.sass_snapshot_path),
+            f"--style={self.style}",
         ] + [f"--load-path={p}" for p in self.paths]
 
     def command_with_path(self, source: Path, dest: Path) -> list[str]:
@@ -51,15 +56,19 @@ class CLI:
 
 
 def compile_string(
-    source: str, syntax: Syntax = "scss", load_paths: Optional[list[Path]] = None
+    source: str,
+    syntax: Syntax = "scss",
+    load_paths: Optional[list[Path]] = None,
+    style: OutputStyle = "expanded",
 ) -> str:
     """Convert from Sass/SCSS source to CSS.
 
     :param srouce: Source text. It must be format for Sass or SCSS.
     :param syntax: Source format.
     :param load_paths: List of addtional load path for Sass compile.
+    :param style: Output style.
     """
-    cli = CLI(load_paths)
+    cli = CLI(load_paths, style)
     proc = subprocess.run(
         cli.command_with_stdin(syntax),
         input=source,
@@ -73,14 +82,16 @@ def compile_file(
     source: Path,
     dest: Path,
     load_paths: Optional[list[Path]] = None,
+    style: OutputStyle = "expanded",
 ) -> Path:
     """Convert from Sass/SCSS source to CSS.
 
     :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
     :param dest: Output destination.
     :param load_paths: List of addtional load path for Sass compile.
+    :param style: Output style.
     """
-    cli = CLI(load_paths)
+    cli = CLI(load_paths, style)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
@@ -93,6 +104,7 @@ def compile_directory(
     source: Path,
     dest: Path,
     load_paths: Optional[list[Path]] = None,
+    style: OutputStyle = "expanded",
 ) -> list[Path]:
     """Compile all source files on specified directory.
 
@@ -103,9 +115,10 @@ def compile_directory(
     :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
     :param dest: Output destination.
     :param load_paths: List of addtional load path for Sass compile.
+    :param style: Output style.
     """
 
-    cli = CLI(load_paths)
+    cli = CLI(load_paths, style)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
