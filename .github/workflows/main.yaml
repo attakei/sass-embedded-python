@@ -21,17 +21,13 @@ jobs:
       - name: 'Run linters'
         run: |
           lefthook run pre-commit --all-files  prebuild:
-  test:
+  feature-test:
+    # Test for works with any supported Python.
     needs: 'lint'
-    runs-on: '${{ matrix.runner }}'
+    runs-on: 'ubuntu-latest'
     strategy:
       max-parallel: 4
       matrix:
-        runner:
-          - 'ubuntu-latest'
-          - 'windows-latest'
-          - 'macos-latest'
-          - 'macos-13'
         python:
           - '3.9'
           - '3.10'
@@ -48,6 +44,29 @@ jobs:
         run: |
           echo ${{ matrix.python }} > .python-version
           uv sync --all-groups --all-extras ${{ (matrix.workspace == 'latest' && '-U') || '--frozen' }}
+          uv run python -m sass_embedded.dart_sass
+      - name: 'Run test'
+        run: |
+          uv run pytest
+  platform-test:
+    # Test for works on any platforms.
+    needs: 'lint'
+    runs-on: '${{ matrix.runner }}'
+    strategy:
+      max-parallel: 4
+      matrix:
+        runner:
+          - 'windows-latest'
+          - 'macos-latest'
+          - 'macos-13'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 'Configure workspace'
+        run: |
+          uv sync --all-groups --all-extras --frozen
           uv run python -m sass_embedded.dart_sass
       - name: 'Run test'
         run: |
