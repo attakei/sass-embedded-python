@@ -70,3 +70,15 @@ jobs:
           cd /opt/repo
           uv run python -m sass_embedded.dart_sass
           uv run pytest
+  doc-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: 'Configure dependencies'
+        run: |
+          task setup-dev
+      - name: 'Run build'
+        run: |
+          task docs:build-linkcheck
+          task docs:build-dirhtml
