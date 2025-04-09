@@ -77,8 +77,17 @@ def test_compile_directory(syntax: str, style: str, tmpdir: Path):
     expected = tmpdir / "expected"
     expected.mkdir()
     for s in (here / "test-basics").glob(f"*/style.{style}.css"):
+        if s.parent.name == "modules":
+            continue
         name = f"{s.parent.name}.css"
         shutil.copy(s, expected / name)
     output = tmpdir / "output"
     output.mkdir()
-    result = M.compile_directory(source, output)
+    M.compile_directory(source, output)
+    cmp = filecmp.dircmp(output, expected)
+    output_files = list(Path(output).glob("*.css"))
+    output_maps = list(Path(output).glob("*.css.map"))
+    expexted_files = list(Path(expected).glob("*"))
+    assert len(expexted_files) == len(output_files)
+    assert len(output_files) == len(output_maps)
+    assert cmp.left_only == sorted([f.name for f in output_maps])
