@@ -9,7 +9,7 @@ from sass_embedded import simple as M
 here = Path(__file__).parent
 
 targets = [
-    d
+    d.name
     for d in (here / "test-basics").glob("*")
     if d.is_dir() and d.stem not in ["modules"]
 ]
