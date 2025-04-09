@@ -1,4 +1,4 @@
-import re
+import filecmp
 import shutil
 from pathlib import Path
 
@@ -9,9 +9,9 @@ from sass_embedded import simple as M
 here = Path(__file__).parent
 
 targets = [
-    css.stem.split(".")[0]
-    for css in (here / "test-basics").glob("*.expanded.css")
-    if not css.name.startswith("_") and css.stem not in ["modules.expanded"]
+    d
+    for d in (here / "test-basics").glob("*")
+    if d.is_dir() and d.stem not in ["modules"]
 ]
 
 
@@ -19,8 +19,8 @@ targets = [
 @pytest.mark.parametrize("syntax", ["sass", "scss"])
 @pytest.mark.parametrize("style", ["expanded", "compressed"])
 def test_compile_string(target: str, syntax: str, style: str):
-    source = here / "test-basics" / f"{target}.{syntax}"
-    expect = here / "test-basics" / f"{target}.{style}.css"
+    source = here / "test-basics" / f"{target}/style.{syntax}"
+    expect = here / "test-basics" / f"{target}/style.{style}.css"
     result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
     assert result == expect.read_text()
 
@@ -29,8 +29,8 @@ def test_compile_string(target: str, syntax: str, style: str):
 @pytest.mark.parametrize("syntax", ["sass", "scss"])
 @pytest.mark.parametrize("style", ["expanded", "compressed"])
 def test_compile_file(target: str, syntax: str, style: str, tmpdir: Path):
-    source = here / "test-basics" / f"{target}.{syntax}"
-    expect = here / "test-basics" / f"{target}.{style}.css"
+    source = here / "test-basics" / f"{target}/style.{syntax}"
+    expect = here / "test-basics" / f"{target}/style.{style}.css"
     dest = tmpdir / f"{target}.css"
     result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
     assert expect.read_text().strip() in result.read_text().strip()
@@ -39,15 +39,15 @@ def test_compile_file(target: str, syntax: str, style: str, tmpdir: Path):
 @pytest.mark.parametrize(
     "source_path,load_dir",
     [
-        ("modules-scss/styles.scss", "modules-scss"),
-        ("modules-scss/styles.scss", "modules-sass"),
-        ("modules-sass/styles.sass", "modules-scss"),
-        ("modules-sass/styles.sass", "modules-sass"),
+        ("modules/scss/style.scss", "modules/scss"),
+        ("modules/scss/style.scss", "modules/sass"),
+        ("modules/sass/style.sass", "modules/scss"),
+        ("modules/sass/style.sass", "modules/sass"),
     ],
 )
 def test_compile_string_moduled_scss(source_path: str, load_dir: str):
     source = here / "test-basics" / source_path
-    expect = here / "test-basics" / "modules.expanded.css"
+    expect = here / "test-basics" / "modules/style.expanded.css"
     module_dir = here / "test-basics" / load_dir
     result = M.compile_string(
         source.read_text(),
@@ -58,8 +58,8 @@ def test_compile_string_moduled_scss(source_path: str, load_dir: str):
 
 
 def test_compile_string_moduled_sass():
-    source = here / "test-basics" / "modules-scss" / "styles.scss"
-    expect = here / "test-basics" / "modules.expanded.css"
+    source = here / "test-basics" / "modules/scss" / "style.scss"
+    expect = here / "test-basics" / "modules/style.expanded.css"
     result = M.compile_string(
         source.read_text(), syntax="scss", load_paths=[source.parent]
     )
@@ -71,12 +71,14 @@ def test_compile_string_moduled_sass():
 def test_compile_directory(syntax: str, style: str, tmpdir: Path):
     source = tmpdir / "source"
     source.mkdir()
-    for s in (here / "test-basics").glob(f"*.{syntax}"):
-        shutil.copy(s, source)
+    for s in (here / "test-basics").glob(f"*/*.{syntax}"):
+        name = f"{s.parent.name}.{syntax}"
+        shutil.copy(s, source / name)
     expected = tmpdir / "expected"
     expected.mkdir()
-    for s in (here / "test-basics").glob(f"*.{style}.css"):
-        shutil.copy(s, expected)
+    for s in (here / "test-basics").glob(f"*/style.{style}.css"):
+        name = f"{s.parent.name}.css"
+        shutil.copy(s, expected / name)
     output = tmpdir / "output"
     output.mkdir()
     result = M.compile_directory(source, output)
