@@ -157,6 +157,8 @@ def compile_file(
     dest: Path,
     load_paths: Optional[list[Path]] = None,
     style: OutputStyle = "expanded",
+    embed_sourcemap: bool = False,
+    embed_sources: bool = False,
 ) -> Path:
     """Convert from Sass/SCSS source to CSS.
 
@@ -164,8 +166,13 @@ def compile_file(
     :param dest: Output destination.
     :param load_paths: List of addtional load path for Sass compile.
     :param style: Output style.
+    :param embed_sourcemap: Flag to embed source-map into output.
+    :param embed_sources: Flag to embed sources into output.
     """
-    options = CompileOptions(load_paths or [], style)
+    sourcemap_options = SourceMapOptions(
+        style="embed" if embed_sourcemap else "refer", source_embed=embed_sources
+    )
+    options = CompileOptions(load_paths or [], style, sourcemap_options)
     cli = CLI(options)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True

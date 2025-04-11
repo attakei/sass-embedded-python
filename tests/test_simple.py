@@ -61,15 +61,28 @@ class TestFor_compie_string:
         assert caplog.records
 
 
-@pytest.mark.parametrize("target", targets)
-@pytest.mark.parametrize("syntax", ["sass", "scss"])
-@pytest.mark.parametrize("style", ["expanded", "compressed"])
-def test_compile_file(target: str, syntax: str, style: str, tmpdir: Path):
-    source = here / "test-basics" / f"{target}/style.{syntax}"
-    expect = here / "test-basics" / f"{target}/style.{style}.css"
-    dest = tmpdir / f"{target}.css"
-    result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
-    assert expect.read_text().strip() in result.read_text().strip()
+class TestFor_compie_file:
+    @pytest.mark.parametrize("target", targets)
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    @pytest.mark.parametrize("style", ["expanded", "compressed"])
+    def test_compile_file(self, target: str, syntax: str, style: str, tmpdir: Path):
+        source = here / "test-basics" / f"{target}/style.{syntax}"
+        expect = here / "test-basics" / f"{target}/style.{style}.css"
+        dest = tmpdir / f"{target}.css"
+        result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
+        assert expect.read_text().strip() in result.read_text().strip()
+
+    @pytest.mark.parametrize("target", targets)
+    def test_compile_with_embed_sourcemap(self, target: str, tmpdir: Path):
+        source = here / "test-basics" / f"{target}/style.scss"
+        dest = tmpdir / f"{target}.css"
+        M.compile_file(source, dest, embed_sourcemap=True)
+        assert not (tmpdir / f"{target}.css.map").exists()
+        r_embed_map = dest.read_text(encoding="utf8")
+        M.compile_file(source, dest, embed_sourcemap=True, embed_sources=True)
+        assert not (tmpdir / f"{target}.css.map").exists()
+        r_embed_sources = dest.read_text(encoding="utf8")
+        assert r_embed_map != r_embed_sources
 
 
 @pytest.mark.parametrize(
