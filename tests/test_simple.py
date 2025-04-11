@@ -15,14 +15,50 @@ targets = [
 ]
 
 
-@pytest.mark.parametrize("target", targets)
-@pytest.mark.parametrize("syntax", ["sass", "scss"])
-@pytest.mark.parametrize("style", ["expanded", "compressed"])
-def test_compile_string(target: str, syntax: str, style: str):
-    source = here / "test-basics" / f"{target}/style.{syntax}"
-    expect = here / "test-basics" / f"{target}/style.{style}.css"
-    result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
-    assert result == expect.read_text()
+class TestFor_compie_string:
+    @pytest.mark.parametrize("target", targets)
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    @pytest.mark.parametrize("style", ["expanded", "compressed"])
+    def test_default_calling(self, target: str, syntax: str, style: str):
+        source = here / "test-basics" / f"{target}/style.{syntax}"
+        expect = here / "test-basics" / f"{target}/style.{style}.css"
+        result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
+        assert result == expect.read_text()
+
+    @pytest.mark.parametrize("target", targets)
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    @pytest.mark.parametrize("style", ["expanded", "compressed"])
+    def test_with_embed_sourcemap(self, target: str, syntax: str, style: str, caplog):
+        source = here / "test-basics" / f"{target}/style.{syntax}"
+        expect = here / "test-basics" / f"{target}/style.{style}.css"
+        expect_text = expect.read_text().strip()
+        result1 = M.compile_string(
+            source.read_text(),
+            syntax=syntax,  # type: ignore[arg-type]
+            style=style,  # type: ignore[arg-type]
+            embed_sourcemap=True,
+        )
+        assert expect_text != result1
+        assert expect_text in result1
+        result2 = M.compile_string(
+            source.read_text(),
+            syntax=syntax,  # type: ignore[arg-type]
+            style=style,  # type: ignore[arg-type]
+            embed_sourcemap=True,
+            embed_sources=True,
+        )
+        assert expect_text in result2
+        assert result1 != result2
+        result3 = M.compile_string(
+            source.read_text(),
+            syntax=syntax,  # type: ignore[arg-type]
+            style=style,  # type: ignore[arg-type]
+            embed_sources=True,
+        )
+        assert result3 != result1
+        assert result3 != result2
+        assert result3.strip() == expect_text
+        assert caplog.records
 
 
 @pytest.mark.parametrize("target", targets)

@@ -9,6 +9,7 @@ Finally, this provides all features of `Dart Sass CLI`_ excluded something.
 
 from __future__ import annotations
 
+import logging
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -23,6 +24,8 @@ Syntax = Literal["scss", "sass", "css"]
 OutputStyle = Literal["expanded", "compressed"]
 SourceMapStyle = Literal["refer", "embed"]
 SourceMapUrl = Literal["relative", "absolute"]
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -45,9 +48,12 @@ class SourceMapOptions:
     :ref: https://sass-lang.com/documentation/cli/dart-sass/#embed-sources
     """
 
-    @property
-    def as_arguments(self) -> list[str]:
-        args = ["--source-map-urls=relative"]
+    def get_arguments(self, use_stdout: bool) -> list[str]:
+        args = [] if use_stdout else ["--source-map-urls=relative"]
+        if self.style == "embed":
+            args.append("--embed-source-map")
+        if self.source_embed:
+            args.append("--embed-sources")
         return args
 
 
@@ -76,13 +82,9 @@ class CompileOptions:
         args = [
             f"--style={self.output_style}",
         ] + [f"--load-path={p}" for p in self.paths]
-        if use_stdout:
-            # When use stdout to write compiled CSS, it cannot use source-map options.
-            return args
-        # Work arguments for source-map.
         if not self.sourcemap_options:
             return args
-        return args + self.sourcemap_options.as_arguments
+        return args + self.sourcemap_options.get_arguments(use_stdout)
 
 
 class CLI:
@@ -120,6 +122,8 @@ def compile_string(
     syntax: Syntax = "scss",
     load_paths: Optional[list[Path]] = None,
     style: OutputStyle = "expanded",
+    embed_sourcemap: bool = False,
+    embed_sources: bool = False,
 ) -> str:
     """Convert from Sass/SCSS source to CSS.
 
@@ -127,8 +131,17 @@ def compile_string(
     :param syntax: Source format.
     :param load_paths: List of addtional load path for Sass compile.
     :param style: Output style.
+    :param embed_sourcemap: Flag to embed source-map into output.
+    :param embed_sources: Flag to embed sources into output. It works only when ``embed_sourcemap`` is ``True``.
     """
-    options = CompileOptions(load_paths or [], style)
+    sourcemap_options = None
+    if embed_sourcemap:
+        sourcemap_options = SourceMapOptions(style="embed", source_embed=embed_sources)
+    elif embed_sources:
+        logger.warning("'embed_sourcemap' should be True when 'embed_sources' is True.")
+    options = CompileOptions(
+        load_paths or [], style, sourcemap_options=sourcemap_options
+    )
     cli = CLI(options)
     proc = subprocess.run(
         cli.command_with_stdin(syntax),
