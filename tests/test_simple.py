@@ -115,28 +115,58 @@ def test_compile_string_moduled_sass():
     assert result == expect.read_text()
 
 
-@pytest.mark.parametrize("syntax", ["sass", "scss"])
-@pytest.mark.parametrize("style", ["expanded", "compressed"])
-def test_compile_directory(syntax: str, style: str, tmpdir: Path):
-    source = tmpdir / "source"
-    source.mkdir()
-    for s in (here / "test-basics").glob(f"*/*.{syntax}"):
-        name = f"{s.parent.name}.{syntax}"
-        shutil.copy(s, source / name)
-    expected = tmpdir / "expected"
-    expected.mkdir()
-    for s in (here / "test-basics").glob(f"*/style.{style}.css"):
-        if s.parent.name == "modules":
-            continue
-        name = f"{s.parent.name}.css"
-        shutil.copy(s, expected / name)
-    output = tmpdir / "output"
-    output.mkdir()
-    M.compile_directory(source, output)
-    cmp = filecmp.dircmp(output, expected)
-    output_files = list(Path(output).glob("*.css"))
-    output_maps = list(Path(output).glob("*.css.map"))
-    expexted_files = list(Path(expected).glob("*"))
-    assert len(expexted_files) == len(output_files)
-    assert len(output_files) == len(output_maps)
-    assert cmp.left_only == sorted([f.name for f in output_maps])
+class TestFor_compile_directory:
+    def _setup_items(
+        self, base_dir: Path, syntax: str, style: str
+    ) -> tuple[Path, Path, Path]:
+        source = base_dir / "source"
+        source.mkdir()
+        for s in (here / "test-basics").glob(f"*/*.{syntax}"):
+            name = f"{s.parent.name}.{syntax}"
+            shutil.copy(s, source / name)
+        expected = base_dir / "expected"
+        expected.mkdir()
+        for s in (here / "test-basics").glob(f"*/style.{style}.css"):
+            if s.parent.name == "modules":
+                continue
+            name = f"{s.parent.name}.css"
+            shutil.copy(s, expected / name)
+        output = base_dir / "output"
+        output.mkdir()
+        return source, expected, output
+
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    @pytest.mark.parametrize("style", ["expanded", "compressed"])
+    def test_default(self, syntax: str, style: str, tmpdir: Path):
+        source, expected, output = self._setup_items(tmpdir, syntax, style)
+        M.compile_directory(source, output)
+        cmp = filecmp.dircmp(output, expected)
+        output_files = list(Path(output).glob("*.css"))
+        output_maps = list(Path(output).glob("*.css.map"))
+        expexted_files = list(Path(expected).glob("*"))
+        assert len(expexted_files) == len(output_files)
+        assert len(output_files) == len(output_maps)
+        assert cmp.left_only == sorted([f.name for f in output_maps])
+
+    def test_with_embed_sourcemap(self, tmpdir: Path):
+        source, expected, output = self._setup_items(tmpdir, "scss", "expanded")
+        M.compile_directory(source, output, embed_sourcemap=True)
+        output_files = list(Path(output).glob("*.css"))
+        output_maps = list(Path(output).glob("*.css.map"))
+        expexted_files = list(Path(expected).glob("*"))
+        assert len(expexted_files) == len(output_files)
+        assert not output_maps
+
+    def test_with_embed_sources(self, tmpdir: Path):
+        source, expected, output1 = self._setup_items(tmpdir, "scss", "expanded")
+        output2 = tmpdir / "output2"
+        output2.mkdir()
+        M.compile_directory(source, output1)
+        M.compile_directory(source, output2, embed_sources=True)
+        output1_maps = list(Path(output1).glob("*.css.map"))
+        output2_maps = list(Path(output2).glob("*.css.map"))
+        assert len(output1_maps) == len(output2_maps)
+        for output1_filepath, output2_filepath in zip(output1_maps, output2_maps):
+            output1_text = output1_filepath.read_text(encoding="utf8")
+            output2_text = output2_filepath.read_text(encoding="utf8")
+            assert output1_text != output2_text
