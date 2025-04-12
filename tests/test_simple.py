@@ -112,6 +112,10 @@ class TestFor_compie_file:
         r_embed_sources = dest.read_text(encoding="utf8")
         assert r_embed_map != r_embed_sources
 
+    @pytest.mark.xfail(
+        "sys.platform == 'win32' and 'CI' in os.environ",
+        reason="Fail only Windows on GitHub Actions, but it succeed on local Windows.",
+    )
     @pytest.mark.parametrize("target", targets)
     def test_diff_source_urls_rule(self, target: str, tmpdir: Path):
         source = here / "test-basics" / f"{target}/style.scss"
