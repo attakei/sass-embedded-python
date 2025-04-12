@@ -116,7 +116,7 @@ class TestFor_compie_file:
     def test_diff_source_urls_rule(self, target: str, tmpdir: Path):
         source = here / "test-basics" / f"{target}/style.scss"
         dest = tmpdir / f"{target}.css"
-        M.compile_file(source, dest)
+        M.compile_file(source, dest, source_urls="relative")  # Explicit argument
         r_relative = (tmpdir / f"{target}.css.map").read_text(encoding="utf8")
         M.compile_file(source, dest, source_urls="absolute")
         r_absolute = (tmpdir / f"{target}.css.map").read_text(encoding="utf8")
