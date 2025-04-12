@@ -93,7 +93,7 @@ class TestFor_compie_file:
     @pytest.mark.parametrize("target", targets)
     @pytest.mark.parametrize("syntax", ["sass", "scss"])
     @pytest.mark.parametrize("style", ["expanded", "compressed"])
-    def test_compile_file(self, target: str, syntax: str, style: str, tmpdir: Path):
+    def test_default_calling(self, target: str, syntax: str, style: str, tmpdir: Path):
         source = here / "test-basics" / f"{target}/style.{syntax}"
         expect = here / "test-basics" / f"{target}/style.{style}.css"
         dest = tmpdir / f"{target}.css"
@@ -101,7 +101,7 @@ class TestFor_compie_file:
         assert expect.read_text().strip() in result.read_text().strip()
 
     @pytest.mark.parametrize("target", targets)
-    def test_compile_with_embed_sourcemap(self, target: str, tmpdir: Path):
+    def test_with_embed_sourcemap(self, target: str, tmpdir: Path):
         source = here / "test-basics" / f"{target}/style.scss"
         dest = tmpdir / f"{target}.css"
         M.compile_file(source, dest, embed_sourcemap=True)
@@ -135,7 +135,7 @@ class TestFor_compile_directory:
 
     @pytest.mark.parametrize("syntax", ["sass", "scss"])
     @pytest.mark.parametrize("style", ["expanded", "compressed"])
-    def test_default(self, syntax: str, style: str, tmpdir: Path):
+    def test_default_calling(self, syntax: str, style: str, tmpdir: Path):
         source, expected, output = self._setup_items(tmpdir, syntax, style)
         M.compile_directory(source, output)
         cmp = filecmp.dircmp(output, expected)
