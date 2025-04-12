@@ -60,6 +60,34 @@ class TestFor_compie_string:
         assert result3.strip() == expect_text
         assert caplog.records
 
+    @pytest.mark.parametrize(
+        "source_path,load_dir",
+        [
+            ("modules/scss/style.scss", "modules/scss"),
+            ("modules/scss/style.scss", "modules/sass"),
+            ("modules/sass/style.sass", "modules/scss"),
+            ("modules/sass/style.sass", "modules/sass"),
+        ],
+    )
+    def test_compile_with_moduled_scss(self, source_path: str, load_dir: str):
+        source = here / "test-basics" / source_path
+        expect = here / "test-basics" / "modules/style.expanded.css"
+        module_dir = here / "test-basics" / load_dir
+        result = M.compile_string(
+            source.read_text(),
+            syntax=source.name[-4:],  # type: ignore[arg-type]
+            load_paths=[module_dir],
+        )
+        assert result == expect.read_text()
+
+    def test_scss_with_moduled_sass(self):
+        source = here / "test-basics" / "modules/scss" / "style.scss"
+        expect = here / "test-basics" / "modules/style.expanded.css"
+        result = M.compile_string(
+            source.read_text(), syntax="scss", load_paths=[source.parent]
+        )
+        assert result == expect.read_text()
+
 
 class TestFor_compie_file:
     @pytest.mark.parametrize("target", targets)
@@ -83,36 +111,6 @@ class TestFor_compie_file:
         assert not (tmpdir / f"{target}.css.map").exists()
         r_embed_sources = dest.read_text(encoding="utf8")
         assert r_embed_map != r_embed_sources
-
-
-@pytest.mark.parametrize(
-    "source_path,load_dir",
-    [
-        ("modules/scss/style.scss", "modules/scss"),
-        ("modules/scss/style.scss", "modules/sass"),
-        ("modules/sass/style.sass", "modules/scss"),
-        ("modules/sass/style.sass", "modules/sass"),
-    ],
-)
-def test_compile_string_moduled_scss(source_path: str, load_dir: str):
-    source = here / "test-basics" / source_path
-    expect = here / "test-basics" / "modules/style.expanded.css"
-    module_dir = here / "test-basics" / load_dir
-    result = M.compile_string(
-        source.read_text(),
-        syntax=source.name[-4:],  # type: ignore[arg-type]
-        load_paths=[module_dir],
-    )
-    assert result == expect.read_text()
-
-
-def test_compile_string_moduled_sass():
-    source = here / "test-basics" / "modules/scss" / "style.scss"
-    expect = here / "test-basics" / "modules/style.expanded.css"
-    result = M.compile_string(
-        source.read_text(), syntax="scss", load_paths=[source.parent]
-    )
-    assert result == expect.read_text()
 
 
 class TestFor_compile_directory:
@@ -158,7 +156,7 @@ class TestFor_compile_directory:
         assert not output_maps
 
     def test_with_embed_sources(self, tmpdir: Path):
-        source, expected, output1 = self._setup_items(tmpdir, "scss", "expanded")
+        source, _, output1 = self._setup_items(tmpdir, "scss", "expanded")
         output2 = tmpdir / "output2"
         output2.mkdir()
         M.compile_directory(source, output1)
