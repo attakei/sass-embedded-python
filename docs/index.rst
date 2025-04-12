@@ -7,6 +7,13 @@ Home
 
 .. toctree::
    :maxdepth: 2
+   :caption: Usage:
+
+   installation
+   usage
+
+.. toctree::
+   :maxdepth: 2
    :caption: Extra:
 
    changelog
