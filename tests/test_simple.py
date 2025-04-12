@@ -112,6 +112,16 @@ class TestFor_compie_file:
         r_embed_sources = dest.read_text(encoding="utf8")
         assert r_embed_map != r_embed_sources
 
+    @pytest.mark.parametrize("target", targets)
+    def test_diff_source_urls_rule(self, target: str, tmpdir: Path):
+        source = here / "test-basics" / f"{target}/style.scss"
+        dest = tmpdir / f"{target}.css"
+        M.compile_file(source, dest)
+        r_relative = (tmpdir / f"{target}.css.map").read_text(encoding="utf8")
+        M.compile_file(source, dest, source_urls="absolute")
+        r_absolute = (tmpdir / f"{target}.css.map").read_text(encoding="utf8")
+        assert r_relative != r_absolute
+
 
 class TestFor_compile_directory:
     def _setup_items(
@@ -161,6 +171,20 @@ class TestFor_compile_directory:
         output2.mkdir()
         M.compile_directory(source, output1)
         M.compile_directory(source, output2, embed_sources=True)
+        output1_maps = list(Path(output1).glob("*.css.map"))
+        output2_maps = list(Path(output2).glob("*.css.map"))
+        assert len(output1_maps) == len(output2_maps)
+        for output1_filepath, output2_filepath in zip(output1_maps, output2_maps):
+            output1_text = output1_filepath.read_text(encoding="utf8")
+            output2_text = output2_filepath.read_text(encoding="utf8")
+            assert output1_text != output2_text
+
+    def test_diff_source_urls(self, tmpdir: Path):
+        source, _, output1 = self._setup_items(tmpdir, "scss", "expanded")
+        output2 = tmpdir / "output2"
+        output2.mkdir()
+        M.compile_directory(source, output1)
+        M.compile_directory(source, output2, source_urls="absolute")
         output1_maps = list(Path(output1).glob("*.css.map"))
         output2_maps = list(Path(output2).glob("*.css.map"))
         assert len(output1_maps) == len(output2_maps)

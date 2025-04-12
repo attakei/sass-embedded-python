@@ -49,7 +49,7 @@ class SourceMapOptions:
     """
 
     def get_arguments(self, use_stdout: bool) -> list[str]:
-        args = [] if use_stdout else ["--source-map-urls=relative"]
+        args = [] if use_stdout else [f"--source-map-urls={self.source_url}"]
         if self.style == "embed":
             args.append("--embed-source-map")
         if self.source_embed:
@@ -159,6 +159,7 @@ def compile_file(
     style: OutputStyle = "expanded",
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
+    source_urls: SourceMapUrl = "relative",
 ) -> Path:
     """Convert from Sass/SCSS source to CSS.
 
@@ -168,9 +169,12 @@ def compile_file(
     :param style: Output style.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
+    :param source_urls: Style for refer to sources on source-map.
     """
     sourcemap_options = SourceMapOptions(
-        style="embed" if embed_sourcemap else "refer", source_embed=embed_sources
+        style="embed" if embed_sourcemap else "refer",
+        source_embed=embed_sources,
+        source_url=source_urls,
     )
     options = CompileOptions(load_paths or [], style, sourcemap_options)
     cli = CLI(options)
@@ -189,6 +193,7 @@ def compile_directory(
     style: OutputStyle = "expanded",
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
+    source_urls: SourceMapUrl = "relative",
 ) -> list[Path]:
     """Compile all source files on specified directory.
 
@@ -202,9 +207,12 @@ def compile_directory(
     :param style: Output style.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
+    :param source_urls: Style for refer to sources on source-maps.
     """
     sourcemap_options = SourceMapOptions(
-        style="embed" if embed_sourcemap else "refer", source_embed=embed_sources
+        style="embed" if embed_sourcemap else "refer",
+        source_embed=embed_sources,
+        source_url=source_urls,
     )
     options = CompileOptions(load_paths or [], style, sourcemap_options)
     cli = CLI(options)
