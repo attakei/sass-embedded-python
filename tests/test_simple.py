@@ -101,6 +101,13 @@ class TestFor_compie_file:
         assert expect.read_text().strip() in result.read_text().strip()
 
     @pytest.mark.parametrize("target", targets)
+    def test_no_sourcemap(self, target: str, tmpdir: Path):
+        source = here / "test-basics" / f"{target}/style.scss"
+        dest = tmpdir / f"{target}.css"
+        M.compile_file(source, dest, no_sourcemap=True)
+        assert not (tmpdir / f"{target}.css.map").exists()
+
+    @pytest.mark.parametrize("target", targets)
     def test_with_embed_sourcemap(self, target: str, tmpdir: Path):
         source = here / "test-basics" / f"{target}/style.scss"
         dest = tmpdir / f"{target}.css"
@@ -159,6 +166,15 @@ class TestFor_compile_directory:
         assert len(expexted_files) == len(output_files)
         assert len(output_files) == len(output_maps)
         assert cmp.left_only == sorted([f.name for f in output_maps])
+
+    def test_with_no_sourcemaps(self, tmpdir: Path):
+        source, expected, output = self._setup_items(tmpdir, "scss", "expanded")
+        M.compile_directory(source, output, no_sourcemap=True)
+        output_files = list(Path(output).glob("*.css"))
+        output_maps = list(Path(output).glob("*.css.map"))
+        expexted_files = list(Path(expected).glob("*"))
+        assert len(expexted_files) == len(output_files)
+        assert not output_maps
 
     def test_with_embed_sourcemap(self, tmpdir: Path):
         source, expected, output = self._setup_items(tmpdir, "scss", "expanded")

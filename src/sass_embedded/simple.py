@@ -83,6 +83,7 @@ class CompileOptions:
             f"--style={self.output_style}",
         ] + [f"--load-path={p}" for p in self.paths]
         if not self.sourcemap_options:
+            args.append("--no-source-map")
             return args
         return args + self.sourcemap_options.get_arguments(use_stdout)
 
@@ -157,6 +158,7 @@ def compile_file(
     dest: Path,
     load_paths: Optional[list[Path]] = None,
     style: OutputStyle = "expanded",
+    no_sourcemap: bool = False,
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
@@ -167,14 +169,19 @@ def compile_file(
     :param dest: Output destination.
     :param load_paths: List of addtional load path for Sass compile.
     :param style: Output style.
+    :param no_sourcemap: Flag to skip generating source-map.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
     :param source_urls: Style for refer to sources on source-map.
     """
-    sourcemap_options = SourceMapOptions(
-        style="embed" if embed_sourcemap else "refer",
-        source_embed=embed_sources,
-        source_url=source_urls,
+    sourcemap_options = (
+        None
+        if no_sourcemap
+        else SourceMapOptions(
+            style="embed" if embed_sourcemap else "refer",
+            source_embed=embed_sources,
+            source_url=source_urls,
+        )
     )
     options = CompileOptions(load_paths or [], style, sourcemap_options)
     cli = CLI(options)
@@ -191,6 +198,7 @@ def compile_directory(
     dest: Path,
     load_paths: Optional[list[Path]] = None,
     style: OutputStyle = "expanded",
+    no_sourcemap: bool = False,
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
@@ -205,14 +213,19 @@ def compile_directory(
     :param dest: Output destination.
     :param load_paths: List of addtional load path for Sass compile.
     :param style: Output style.
+    :param no_sourcemap: Flag to skip generating source-maps.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
     :param source_urls: Style for refer to sources on source-maps.
     """
-    sourcemap_options = SourceMapOptions(
-        style="embed" if embed_sourcemap else "refer",
-        source_embed=embed_sources,
-        source_url=source_urls,
+    sourcemap_options = (
+        None
+        if no_sourcemap
+        else SourceMapOptions(
+            style="embed" if embed_sourcemap else "refer",
+            source_embed=embed_sources,
+            source_url=source_urls,
+        )
     )
     options = CompileOptions(load_paths or [], style, sourcemap_options)
     cli = CLI(options)
