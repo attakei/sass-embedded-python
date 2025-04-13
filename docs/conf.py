@@ -22,5 +22,6 @@ html_short_title = f"{project} v{release}"
 
 # -- Options for LINKCHECK output
 linkcheck_ignore = [
+    "https://github.com/sass/sass/blob/main/spec/embedded-protocol.md#",
     "https://pypi.org/project/sass-embedded",  # Until published.
 ]
