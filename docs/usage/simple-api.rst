@@ -1,12 +1,6 @@
-===========
-Usage guide
-===========
-
-.. note::
-
-   sass-embedded requires Dart Sass executable.
-   When you install by sdist, none-any bdist or source,
-   you need to install it manually.
+==========
+Simple API
+==========
 
 This is simple usage guide.
 When you want to learn more information,

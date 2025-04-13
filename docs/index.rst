@@ -19,7 +19,7 @@ Document guide
    :caption: For users:
 
    installation
-   usage
+   usage/index
 
 .. toctree::
    :maxdepth: 1
