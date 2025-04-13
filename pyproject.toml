@@ -19,6 +19,7 @@ classifiers = [
     "Topic :: Utilities",
 ]
 dependencies = [
+    "bbpb>=1.4.2",
     "protobuf>=6",
 ]
 
