@@ -2,7 +2,7 @@
 sass-embedded-python
 ====================
 
-Embedded Sass Host for Python (in future).
+Embedded Sass Host for Python.
 
 .. important::
 
@@ -11,8 +11,8 @@ Embedded Sass Host for Python (in future).
 Overview
 ========
 
-This is Python project to compile SASS/SCSS using `Dart Sass <https://sass-lang.com/dart-sass/>`
-that is primary implementation of Sass using Dart VM.
+This is Python project to compile Sass/SCSS using `Dart Sass <https://sass-lang.com/dart-sass/>`
+that is primary implementation of Sass using Dart runtime.
 
 Motivation
 ==========
@@ -46,16 +46,16 @@ Works as compile Sass/SCSS with subprocess-based actions.
 Second goal
 -----------
 
-Works as alternative to ``libsass-python``.
+Works as "Sass Embedded Host for Python".
 
-- Support all api of ``libsass-python`` using Dart Sass native executable.
+- Support `The Embedded Sass Protocol <https://github.com/sass/sass/blob/main/spec/embedded-protocol.md>`_.
 
 Third goal
 ----------
 
-Works as "Sass Embedded Host for Python".
+Works as alternative to ``libsass-python``.
 
-- Support `The Embedded Sass Protocol <https://github.com/sass/sass/blob/main/spec/embedded-protocol.md>`_.
+- Support all api of ``libsass-python`` using Dart Sass native executable.
 
 Support
 =======
