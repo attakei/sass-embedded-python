@@ -18,7 +18,9 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Topic :: Utilities",
 ]
-dependencies = []
+dependencies = [
+    "protobuf>=6",
+]
 
 [build-system]
 requires = ["hatchling"]
