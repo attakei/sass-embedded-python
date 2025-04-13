@@ -95,7 +95,7 @@ class TestFor_compie_string:
         source = here / "test-invalids" / "no-variables.scss"
         result = M.compile_string(source.read_text())
         assert not result.ok
-        assert result.err
+        assert result.error
         assert not result.output
 
 

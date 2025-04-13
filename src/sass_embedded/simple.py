@@ -125,7 +125,7 @@ class CLI:
 @dataclass
 class Result(Generic[T]):
     ok: bool
-    err: Optional[str] = None
+    error: Optional[str] = None
     options: Optional[CompileOptions] = None
     output: Optional[T] = None
 
@@ -163,7 +163,7 @@ def compile_string(
         capture_output=True,
     )
     if proc.returncode != 0:
-        return Result(False, err=proc.stderr, options=options)
+        return Result(False, error=proc.stderr, options=options)
     return Result(True, options=options, output=proc.stdout)
 
 
