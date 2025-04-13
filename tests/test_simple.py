@@ -23,7 +23,7 @@ class TestFor_compie_string:
         source = here / "test-basics" / f"{target}/style.{syntax}"
         expect = here / "test-basics" / f"{target}/style.{style}.css"
         result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
-        assert result == expect.read_text()
+        assert result.output == expect.read_text()
 
     @pytest.mark.parametrize("target", targets)
     @pytest.mark.parametrize("syntax", ["sass", "scss"])
@@ -38,8 +38,9 @@ class TestFor_compie_string:
             style=style,  # type: ignore[arg-type]
             embed_sourcemap=True,
         )
-        assert expect_text != result1
-        assert expect_text in result1
+        assert result1.output
+        assert expect_text != result1.output
+        assert expect_text in result1.output
         result2 = M.compile_string(
             source.read_text(),
             syntax=syntax,  # type: ignore[arg-type]
@@ -47,17 +48,19 @@ class TestFor_compie_string:
             embed_sourcemap=True,
             embed_sources=True,
         )
-        assert expect_text in result2
-        assert result1 != result2
+        assert result2.output
+        assert expect_text in result2.output
+        assert result1 != result2.output
         result3 = M.compile_string(
             source.read_text(),
             syntax=syntax,  # type: ignore[arg-type]
             style=style,  # type: ignore[arg-type]
             embed_sources=True,
         )
-        assert result3 != result1
-        assert result3 != result2
-        assert result3.strip() == expect_text
+        assert result3.output
+        assert result3.output != result1
+        assert result3.output != result2
+        assert result3.output.strip() == expect_text
         assert caplog.records
 
     @pytest.mark.parametrize(
@@ -78,7 +81,7 @@ class TestFor_compie_string:
             syntax=source.name[-4:],  # type: ignore[arg-type]
             load_paths=[module_dir],
         )
-        assert result == expect.read_text()
+        assert result.output == expect.read_text()
 
     def test_scss_with_moduled_sass(self):
         source = here / "test-basics" / "modules/scss" / "style.scss"
@@ -86,7 +89,14 @@ class TestFor_compie_string:
         result = M.compile_string(
             source.read_text(), syntax="scss", load_paths=[source.parent]
         )
-        assert result == expect.read_text()
+        assert result.output == expect.read_text()
+
+    def test_invalid(self):
+        source = here / "test-invalids" / "no-variables.scss"
+        result = M.compile_string(source.read_text())
+        assert not result.ok
+        assert result.error
+        assert not result.output
 
 
 class TestFor_compie_file:
@@ -98,7 +108,8 @@ class TestFor_compie_file:
         expect = here / "test-basics" / f"{target}/style.{style}.css"
         dest = tmpdir / f"{target}.css"
         result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
-        assert expect.read_text().strip() in result.read_text().strip()
+        assert result.output
+        assert expect.read_text().strip() in result.output.read_text().strip()
 
     @pytest.mark.parametrize("target", targets)
     def test_no_sourcemap(self, target: str, tmpdir: Path):
@@ -158,7 +169,8 @@ class TestFor_compile_directory:
     @pytest.mark.parametrize("style", ["expanded", "compressed"])
     def test_default_calling(self, syntax: str, style: str, tmpdir: Path):
         source, expected, output = self._setup_items(tmpdir, syntax, style)
-        M.compile_directory(source, output)
+        result = M.compile_directory(source, output)
+        assert result.ok
         cmp = filecmp.dircmp(output, expected)
         output_files = list(Path(output).glob("*.css"))
         output_maps = list(Path(output).glob("*.css.map"))

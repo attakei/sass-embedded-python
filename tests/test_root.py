@@ -21,7 +21,8 @@ def test_compile_string(target: str, syntax: str, style: str):
     source = here / "test-basics" / f"{target}/style.{syntax}"
     expect = here / "test-basics" / f"{target}/style.{style}.css"
     result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
-    assert result == expect.read_text()
+    assert result.output
+    assert result.output == expect.read_text()
 
 
 @pytest.mark.parametrize("target", targets)
@@ -32,7 +33,8 @@ def test_compile_file(target: str, syntax: str, style: str, tmpdir: Path):
     expect = here / "test-basics" / f"{target}/style.{style}.css"
     dest = tmpdir / f"{target}.css"
     result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
-    assert expect.read_text().strip() in result.read_text().strip()
+    assert result.output
+    assert expect.read_text().strip() in result.output.read_text().strip()
 
 
 @pytest.mark.parametrize(
@@ -53,7 +55,8 @@ def test_compile_string_moduled_scss(source_path: str, load_dir: str):
         syntax=source.name[-4:],  # type: ignore[arg-type]
         load_paths=[module_dir],
     )
-    assert result == expect.read_text()
+    assert result.output
+    assert result.output == expect.read_text()
 
 
 def test_compile_string_moduled_sass():
@@ -62,4 +65,5 @@ def test_compile_string_moduled_sass():
     result = M.compile_string(
         source.read_text(), syntax="scss", load_paths=[source.parent]
     )
-    assert result == expect.read_text()
+    assert result.output
+    assert result.output == expect.read_text()

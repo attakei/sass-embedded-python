@@ -4,6 +4,8 @@ This module to work Dart Sass by same process of command line interface.
 
 Finally, this provides all features of `Dart Sass CLI`_ excluded something.
 
+.. note:: This will not provide full-featured JavaScript API because it is to wrap CLI.
+
 .. _Dart Sass CLI: https://sass-lang.com/documentation/cli/dart-sass/
 """
 
@@ -13,12 +15,14 @@ import logging
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, TYPE_CHECKING
+from typing import Generic, Literal, TypeVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Optional
 
 from .dart_sass import Executable, Release
+
+T = TypeVar("T")
 
 Syntax = Literal["scss", "sass", "css"]
 OutputStyle = Literal["expanded", "compressed"]
@@ -118,6 +122,14 @@ class CLI:
         return self._command_base() + opts + self.options.get_cli_arguments(True)
 
 
+@dataclass
+class Result(Generic[T]):
+    ok: bool
+    error: Optional[str] = None
+    options: Optional[CompileOptions] = None
+    output: Optional[T] = None
+
+
 def compile_string(
     source: str,
     syntax: Syntax = "scss",
@@ -125,7 +137,7 @@ def compile_string(
     style: OutputStyle = "expanded",
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
-) -> str:
+) -> Result[str]:
     """Convert from Sass/SCSS source to CSS.
 
     :param srouce: Source text. It must be format for Sass or SCSS.
@@ -150,7 +162,9 @@ def compile_string(
         text=True,
         capture_output=True,
     )
-    return proc.stdout
+    if proc.returncode != 0:
+        return Result(False, error=proc.stderr, options=options)
+    return Result(True, options=options, output=proc.stdout)
 
 
 def compile_file(
@@ -162,7 +176,7 @@ def compile_file(
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
-) -> Path:
+) -> Result[Path]:
     """Convert from Sass/SCSS source to CSS.
 
     :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
@@ -174,6 +188,8 @@ def compile_file(
     :param embed_sources: Flag to embed sources into output.
     :param source_urls: Style for refer to sources on source-map.
     """
+    source = Path(source)
+    dest = Path(dest)
     sourcemap_options = (
         None
         if no_sourcemap
@@ -189,8 +205,8 @@ def compile_file(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
     if proc.returncode != 0:
-        raise Exception(proc.stdout + proc.stderr)
-    return Path(dest)
+        return Result(False, error=proc.stdout + proc.stderr, options=options)
+    return Result(True, options=options, output=dest)
 
 
 def compile_directory(
@@ -202,7 +218,7 @@ def compile_directory(
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
-) -> list[Path]:
+) -> Result[list[Path]]:
     """Compile all source files on specified directory.
 
     This use Many-to-Many Mode of Dart Sass CLI.
@@ -233,5 +249,5 @@ def compile_directory(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
     if proc.returncode != 0:
-        raise Exception(proc.stdout + proc.stderr)
-    return [p for p in Path(dest).glob("*.css")]
+        return Result(False, error=proc.stdout + proc.stderr, options=options)
+    return Result(True, options=options, output=[p for p in Path(dest).glob("*.css")])
