@@ -22,6 +22,12 @@ Document guide
    usage
 
 .. toctree::
+   :maxdepth: 1
+   :caption: For contributors:
+
+   setup-workspace
+
+.. toctree::
    :maxdepth: 2
    :caption: Extra:
 
