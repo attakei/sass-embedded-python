@@ -162,6 +162,8 @@ def compile_string(
         text=True,
         capture_output=True,
     )
+    if proc.returncode != 0:
+        return Result(False, err=proc.stderr, options=options)
     return Result(True, options=options, output=proc.stdout)
 
 

@@ -91,6 +91,13 @@ class TestFor_compie_string:
         )
         assert result.output == expect.read_text()
 
+    def test_invalid(self):
+        source = here / "test-invalids" / "no-variables.scss"
+        result = M.compile_string(source.read_text())
+        assert not result.ok
+        assert result.err
+        assert not result.output
+
 
 class TestFor_compie_file:
     @pytest.mark.parametrize("target", targets)
