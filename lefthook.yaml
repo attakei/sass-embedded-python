@@ -8,10 +8,13 @@ pre-commit:
       glob: '*.py'
       run: 'uv run ruff format {staged_files}'
       stage_fixed: true
+      exclude:
+        - 'src/**/embedded_sass_pb2.py'
     mypy:
       glob: '*.py'
       exclude:
         - '**/conf.py'
+        - 'src/**/embedded_sass_pb2.py'
       run: 'uv run mypy {staged_files}'
     doc8:
       glob: '*.rst'
