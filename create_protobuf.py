@@ -30,6 +30,7 @@ def main() -> int:
         "protoc",
         f"--proto_path={proto_dir}",
         f"--python_out={root / 'src' / 'sass_embedded' / 'protocol'}",
+        f"--pyi_out={root / 'src' / 'sass_embedded' / 'protocol'}",
         str(proto_path),
     ]
     result = subprocess.run(command, capture_output=True, text=True)
