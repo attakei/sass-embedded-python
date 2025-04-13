@@ -205,7 +205,7 @@ def compile_file(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
     if proc.returncode != 0:
-        raise Exception(proc.stdout + proc.stderr)
+        return Result(False, error=proc.stdout + proc.stderr, options=options)
     return Result(True, options=options, output=dest)
 
 
@@ -249,5 +249,5 @@ def compile_directory(
         cli.command_with_path(source, dest), capture_output=True, text=True
     )
     if proc.returncode != 0:
-        raise Exception(proc.stdout + proc.stderr)
+        return Result(False, error=proc.stdout + proc.stderr, options=options)
     return Result(True, options=options, output=[p for p in Path(dest).glob("*.css")])
