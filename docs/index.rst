@@ -15,8 +15,8 @@ Document guide
 ==============
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Usage:
+   :maxdepth: 1
+   :caption: For users:
 
    installation
    usage
@@ -28,7 +28,7 @@ Document guide
    setup-workspace
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Extra:
 
    versioning
