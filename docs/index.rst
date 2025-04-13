@@ -25,5 +25,6 @@ Document guide
    :maxdepth: 2
    :caption: Extra:
 
+   versioning
    changelog
    api
