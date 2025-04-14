@@ -67,3 +67,47 @@ jobs:
         with:
           repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
           skip-existing: true
+  publish:
+    if: ${{ inputs.target == 'pypi' || github.event_name == 'push' }}
+    needs:
+      - 'build-common'
+      - 'build-platform'
+    runs-on: ubuntu-latest
+    environment:
+      name: '${{ inputs.target }}'
+      url: 'https://pypi.org/p/sass-embedded'
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - run: |
+          ls -lhR dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
+          skip-existing: true
+  gh-release:
+    if: ${{ github.event_name }} == 'push'
+    needs:
+      - 'build-common'
+      - 'build-platform'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: 'dist/*'
+          bodyFile: '.github/release-body.md'
+          draft: false
+          name: Release ${{ github.ref_name }}
+          tag: ${{ github.ref }}
+          prerelease: false
