@@ -89,7 +89,7 @@ jobs:
         with:
           skip-existing: true
   gh-release:
-    if: ${{ github.event_name }} == 'push'
+    if: ${{ inputs.target == 'pypi' || github.event_name == 'push' }}
     needs:
       - 'build-common'
       - 'build-platform'
