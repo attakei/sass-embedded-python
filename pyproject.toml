@@ -1,6 +1,6 @@
 [project]
 name = "sass-embedded"
-version = "0.0.0"
+version = "0.1.0"
 description = "Sass/SCSS compile host using Dart Sass"
 readme = "README.rst"
 authors = [
