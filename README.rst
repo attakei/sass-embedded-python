@@ -14,6 +14,66 @@ Overview
 This is Python project to compile Sass/SCSS using `Dart Sass <https://sass-lang.com/dart-sass/>`
 that is primary implementation of Sass using Dart runtime.
 
+Simple usage
+============
+
+Install:
+
+.. code:: console
+
+   pip install sass-embedded
+
+Source:
+
+.. code:: css
+   :name: style.scss
+
+   @use "sass:list";
+   @use "sass:color";
+
+   $font-stack: Helvetica, Arial;
+   $primary-color: #333;
+
+   body {
+     $font-stack: list.append($font-stack, sans-serif);
+     font: $font-stack;
+   }
+
+   a {
+     color: $primary-color;
+
+     &:hover{
+       color: color.scale($primary-color, $lightness: 20%);
+     }
+   }
+
+   @debug $font-stack;
+
+Run:
+
+.. code:: python
+
+   from pathlib import Path
+   from sass_embedded import compile_file
+
+   compile_file(Path("style.scss"))
+
+Output:
+
+.. code:: css
+   :name: style.css
+
+   body {
+     font: Helvetica, Arial, sans-serif;
+   }
+
+   a {
+     color: #333;
+   }
+   a:hover {
+     color: rgb(91.8, 91.8, 91.8);
+   }
+
 Motivation
 ==========
 
