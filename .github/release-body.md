@@ -1,2 +1,4 @@
-- Changelog is https://github.com/attakei/sass-embedded-python/blob/v0.0.0/CHANGES.rst
-- You can source diff to https://github.com/attakei/sass-embedded-python/compare/v0.0.0..v0.0.0
+First release
+
+- Changelog is https://github.com/attakei/sass-embedded-python/blob/v0.1.0/CHANGES.rst
+- Source changes is not exists
