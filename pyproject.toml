@@ -29,6 +29,14 @@ dependencies = [
     "protobuf>=6",
 ]
 
+[project.urls]
+Homepage = "https://github.com/attakei/sass-embedded-python"
+Changelog = "https://github.com/attakei/sass-embedded-python/blob/main/CHANGES.rst"
+Source = "https://github.com/attakei/sass-embedded-python"
+Documentation = "https://sass-embedded-python.readthedocs.io/stable/"
+Bug = "https://github.com/attakei/sass-embedded-python/issues"
+Funding = "https://github.com/sponsors/attakei"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
