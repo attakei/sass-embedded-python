@@ -1,0 +1,57 @@
+current_version = "0.0.0"
+
+[[files]]
+path = "pyproject.toml"
+search = "version = \"{{current_version}}\""
+replace = "version = \"{{new_version}}\""
+
+[[files]]
+path = "src/sass_embedded/__init__.py"
+search = "__version__ = \"{{current_version}}\""
+replace = "__version__ = \"{{new_version}}\""
+
+[[files]]
+path = "CHANGES.rst"
+search = """
+Version {{current_version}}
+========{% for _ in current_version %}={% endfor %}
+"""
+replace = """
+Version {{new_version}}
+========{% for _ in new_version %}={% endfor %}
+
+:Release date: {{ now|date }} (Asia/Tokyo)
+:Dart Sass version: 1.87.0
+
+Breaking changes
+----------------
+
+Features
+--------
+
+Fixes
+-----
+
+Others
+------
+
+ver {{current_version}}
+===={% for _ in current_version %}={% endfor %}
+"""
+
+# This file has other replace target, but currently not supported.
+[[files]]
+path = ".github/release-body.md"
+regex = true
+search = """
+(.+)
+
+- Changelog is https://github.com/attakei/sass-embedded-python/blob/v{{current_version}}/CHANGES.rst
+- Source changes is (.+)
+"""
+replace = """
+REWRITE HERE
+
+- Changelog is https://github.com/attakei/sass-embedded-python/blob/v{{new_version}}/CHANGES.rst
+- Source changes is https://github.com/attakei/sass-embedded-python/compare/v{{current_version}}...v{{new_version}}
+"""
