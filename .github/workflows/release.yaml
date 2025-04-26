@@ -46,13 +46,13 @@ jobs:
           name: 'dist-${{ matrix.platform }}'
           path: dist
   publish-test:
-    if: ${{ inputs.target }} == 'testpypi'
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi' }}
     needs:
       - 'build-common'
       - 'build-platform'
     runs-on: ubuntu-latest
     environment:
-      name: '${{ inputs.target }}'
+      name: 'testpypi'
       url: 'https://test.pypi.org/p/sass-embedded'
     permissions:
       id-token: write
@@ -65,7 +65,7 @@ jobs:
           ls -lhR dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
+          repository-url: https://test.pypi.org/legacy/
           skip-existing: true
   publish:
     if: ${{ inputs.target == 'pypi' || github.event_name == 'push' }}
@@ -74,7 +74,7 @@ jobs:
       - 'build-platform'
     runs-on: ubuntu-latest
     environment:
-      name: '${{ inputs.target }}'
+      name: 'pypi'
       url: 'https://pypi.org/p/sass-embedded'
     permissions:
       id-token: write
@@ -87,7 +87,6 @@ jobs:
           ls -lhR dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          repository-url: '${{ secrets.PYPI_REPOSITORY_URL }}'
           skip-existing: true
   gh-release:
     if: ${{ github.event_name }} == 'push'
