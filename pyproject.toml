@@ -69,8 +69,3 @@ exclude = ["src/sass_embedded/dart_sass/_ext"]
 exclude = [
     "embedded_sass_pb2.py",
 ]
-
-[tool.mypy]
-exclude = [
-    'embedded_sass_pb2\.py$',
-]
