@@ -10,12 +10,12 @@ pre-commit:
       stage_fixed: true
       exclude:
         - 'src/**/embedded_sass_pb2.py'
-    mypy:
+    ty:
       glob: '*.py'
       exclude:
         - '**/conf.py'
         - 'src/**/embedded_sass_pb2.py'
-      run: 'uv run mypy {staged_files}'
+      run: 'uv run ty check {staged_files}'
     doc8:
       glob: '*.rst'
       run: 'uv run doc8 --max-line-length=119 {staged_files}'
