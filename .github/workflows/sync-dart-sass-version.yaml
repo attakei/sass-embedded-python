@@ -6,7 +6,7 @@ on:
       - 'aqua.yaml'
 
 jobs:
-  lint:
+  run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +25,12 @@ jobs:
       - name: 'Try sync'
         run: |
           uv run tools/sync-current-sass.py
-      - uses: 'actions-js/push@v1'
+      - name: 'Pre push and commit'
+        run: |
+          git fetch
+          git checkout origin/${{ github.event.pull_request.head.ref }} -b ${{ github.event.pull_request.head.ref }}
+      - uses: 'actions-js/push@v1.5'
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           message: 'feat: Sync version text of Dart Sass'
-          branch: ${{ github.ref_name }}
+          branch: ${{ github.event.pull_request.head.ref }}
