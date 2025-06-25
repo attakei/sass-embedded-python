@@ -36,7 +36,7 @@ Others
 ------
 
 ver {{current_version}}
-===={% for _ in current_version %}={% endfor %}
+===={{#sameLengthChars}}=@{{current_version}}{{/sameLengthChars}}
 """
 
 # This file has other replace target, but currently not supported.
