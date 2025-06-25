@@ -14,7 +14,13 @@ TARGETS = {
             "match": r'DART_SASS_VERSION = ".+"',
             "replace": r'DART_SASS_VERSION = "{version}"',
         }
-    ]
+    ],
+    root / ".age.toml": [
+        {
+            "match": r":Dart Sass version: .+",
+            "replace": r":Dart Sass version: {version}",
+        }
+    ],
 }
 
 
