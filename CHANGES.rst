@@ -12,7 +12,7 @@ Others
 * Add links on PyPI page.
 
 ver 0.1.0
-===={% for _ in current_version %}={% endfor %}
+=========
 
 :Release date: 2025-04-26 (Asia/Tokyo)
 :Dart Sass version: 1.87.0
