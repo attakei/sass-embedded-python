@@ -80,7 +80,7 @@ class CompileOptions:
     charset: bool = False
     """Flag to enable charset emission for CSS with non-ASCII characters.
 
-    :ref: https://sass-lang.com/documentation/cli/dart-sass/#charset
+    :ref: https://sass-lang.com/documentation/cli/dart-sass/#no-charset
     """
 
     def get_cli_arguments(self, use_stdout: bool = False) -> list[str]:
