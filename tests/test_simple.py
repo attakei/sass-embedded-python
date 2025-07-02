@@ -98,6 +98,28 @@ class TestFor_compie_string:
         assert result.error
         assert not result.output
 
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    def test_charset_enabled(self, syntax: str):
+        # Use custom source with non-ASCII characters since test-basics files don't contain them
+        source_text = (
+            "body { content: 'ñ'; }" if syntax == "scss" else "body\n  content: 'ñ'"
+        )
+        result = M.compile_string(source_text, syntax=syntax, charset=True)  # type: ignore[arg-type]
+        assert result.ok
+        assert result.output
+        assert "@charset" in result.output
+
+    @pytest.mark.parametrize("syntax", ["sass", "scss"])
+    def test_charset_disabled(self, syntax: str):
+        # Use custom source with non-ASCII characters since test-basics files don't contain them
+        source_text = (
+            "body { content: 'ñ'; }" if syntax == "scss" else "body\n  content: 'ñ'"
+        )
+        result = M.compile_string(source_text, syntax=syntax, charset=False)  # type: ignore[arg-type]
+        assert result.ok
+        assert result.output
+        assert "@charset" not in result.output
+
 
 class TestFor_compie_file:
     @pytest.mark.parametrize("target", targets)
@@ -143,6 +165,26 @@ class TestFor_compie_file:
         M.compile_file(source, dest, source_urls="absolute")
         r_absolute = (tmpdir / f"{target}.css.map").read_text(encoding="utf8")
         assert r_relative != r_absolute
+
+    def test_charset_enabled(self, tmpdir: Path):
+        # Create custom source file with non-ASCII characters since test-basics files don't contain them
+        source = tmpdir / "style.scss"
+        source.write_text("body { content: 'ñ'; }", encoding="utf8")
+        dest = tmpdir / "style.css"
+        result = M.compile_file(source, dest, charset=True)
+        assert result.output
+        css_content = dest.read_text(encoding="utf8")
+        assert "@charset" in css_content
+
+    def test_charset_disabled(self, tmpdir: Path):
+        # Create custom source file with non-ASCII characters since test-basics files don't contain them
+        source = tmpdir / "style.scss"
+        source.write_text("body { content: 'ñ'; }", encoding="utf8")
+        dest = tmpdir / "style.css"
+        result = M.compile_file(source, dest, charset=False)
+        assert result.output
+        css_content = dest.read_text(encoding="utf8")
+        assert "@charset" not in css_content
 
 
 class TestFor_compile_directory:
@@ -224,3 +266,31 @@ class TestFor_compile_directory:
             output1_text = output1_filepath.read_text(encoding="utf8")
             output2_text = output2_filepath.read_text(encoding="utf8")
             assert output1_text != output2_text
+
+    def test_charset_enabled(self, tmpdir: Path):
+        # Create custom source directory with non-ASCII characters since test-basics files don't contain them
+        source = tmpdir / "source"
+        source.mkdir()
+        (source / "style.scss").write_text("body { content: 'ñ'; }", encoding="utf8")
+        output = tmpdir / "output"
+        output.mkdir()
+        result = M.compile_directory(source, output, charset=True)
+        assert result.ok
+        output_files = list(Path(output).glob("*.css"))
+        for css_file in output_files:
+            css_content = css_file.read_text(encoding="utf8")
+            assert "@charset" in css_content
+
+    def test_charset_disabled(self, tmpdir: Path):
+        # Create custom source directory with non-ASCII characters since test-basics files don't contain them
+        source = tmpdir / "source"
+        source.mkdir()
+        (source / "style.scss").write_text("body { content: 'ñ'; }", encoding="utf8")
+        output = tmpdir / "output"
+        output.mkdir()
+        result = M.compile_directory(source, output, charset=False)
+        assert result.ok
+        output_files = list(Path(output).glob("*.css"))
+        for css_file in output_files:
+            css_content = css_file.read_text(encoding="utf8")
+            assert "@charset" not in css_content

@@ -77,6 +77,11 @@ class CompileOptions:
     """
     sourcemap_options: Optional[SourceMapOptions] = None
     """Generating options for source-map."""
+    charset: bool = False
+    """Flag to enable charset emission for CSS with non-ASCII characters.
+
+    :ref: https://sass-lang.com/documentation/cli/dart-sass/#charset
+    """
 
     def get_cli_arguments(self, use_stdout: bool = False) -> list[str]:
         """Retrieve arguments collection to pass CLI.
@@ -86,6 +91,10 @@ class CompileOptions:
         args = [
             f"--style={self.output_style}",
         ] + [f"--load-path={p}" for p in self.paths]
+        if self.charset:
+            args.append("--charset")
+        else:
+            args.append("--no-charset")
         if not self.sourcemap_options:
             args.append("--no-source-map")
             return args
@@ -137,6 +146,7 @@ def compile_string(
     style: OutputStyle = "expanded",
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
+    charset: bool = False,
 ) -> Result[str]:
     """Convert from Sass/SCSS source to CSS.
 
@@ -146,6 +156,7 @@ def compile_string(
     :param style: Output style.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output. It works only when ``embed_sourcemap`` is ``True``.
+    :param charset: Flag to enable charset emission for CSS with non-ASCII characters.
     """
     sourcemap_options = None
     if embed_sourcemap:
@@ -153,7 +164,7 @@ def compile_string(
     elif embed_sources:
         logger.warning("'embed_sourcemap' should be True when 'embed_sources' is True.")
     options = CompileOptions(
-        load_paths or [], style, sourcemap_options=sourcemap_options
+        load_paths or [], style, sourcemap_options=sourcemap_options, charset=charset
     )
     cli = CLI(options)
     proc = subprocess.run(
@@ -176,6 +187,7 @@ def compile_file(
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
+    charset: bool = False,
 ) -> Result[Path]:
     """Convert from Sass/SCSS source to CSS.
 
@@ -187,6 +199,7 @@ def compile_file(
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
     :param source_urls: Style for refer to sources on source-map.
+    :param charset: Flag to enable charset emission for CSS with non-ASCII characters.
     """
     source = Path(source)
     dest = Path(dest)
@@ -199,7 +212,9 @@ def compile_file(
             source_url=source_urls,
         )
     )
-    options = CompileOptions(load_paths or [], style, sourcemap_options)
+    options = CompileOptions(
+        load_paths or [], style, sourcemap_options, charset=charset
+    )
     cli = CLI(options)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True
@@ -218,6 +233,7 @@ def compile_directory(
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
     source_urls: SourceMapUrl = "relative",
+    charset: bool = False,
 ) -> Result[list[Path]]:
     """Compile all source files on specified directory.
 
@@ -233,6 +249,7 @@ def compile_directory(
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output.
     :param source_urls: Style for refer to sources on source-maps.
+    :param charset: Flag to enable charset emission for CSS with non-ASCII characters.
     """
     sourcemap_options = (
         None
@@ -243,7 +260,9 @@ def compile_directory(
             source_url=source_urls,
         )
     )
-    options = CompileOptions(load_paths or [], style, sourcemap_options)
+    options = CompileOptions(
+        load_paths or [], style, sourcemap_options, charset=charset
+    )
     cli = CLI(options)
     proc = subprocess.run(
         cli.command_with_path(source, dest), capture_output=True, text=True
