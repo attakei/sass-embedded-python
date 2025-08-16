@@ -13,7 +13,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -48,7 +48,7 @@ jobs:
           - '3.13'
         workspace: ['locked', 'latest']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -87,7 +87,7 @@ jobs:
   doc-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua

@@ -15,7 +15,7 @@ jobs:
   build-common:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -43,7 +43,7 @@ jobs:
           - 'manylinux_2_17_x86_64'
           - 'manylinux_2_17_aarch64'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -113,7 +113,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
           path: dist
