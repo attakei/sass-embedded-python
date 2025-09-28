@@ -1,5 +1,18 @@
-Version 0.1.2
+Version 0.1.3
 =============
+
+:Release date: 2025-09-28 (Asia/Tokyo)
+:Dart Sass version: 1.91.2
+
+This does not have source changes.
+
+Others
+------
+
+* Update bundle Dart Sass.
+
+ver 0.1.2
+=========
 
 :Release date: 2025-06-26 (Asia/Tokyo)
 :Dart Sass version: 1.89.2
