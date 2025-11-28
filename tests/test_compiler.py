@@ -5,14 +5,14 @@ from pathlib import Path
 import pytest
 
 from sass_embedded.protocol.compiler import Compiler 
-from sass_embedded.protocol.embedded_sass_pb2 import Syntax, OutputStyle
+from sass_embedded.protocol.embedded_sass_pb2 import Syntax, OutputStyle, Value
 
 here = Path(__file__).parent
 
 targets = [
     d.name
     for d in (here / "test-basics").glob("*")
-    if d.is_dir() and d.stem not in ["modules"]
+    if d.is_dir() and d.stem not in ["modules", "custom"]
 ]
 
 class TestFor_compiler:
@@ -115,3 +115,31 @@ class TestFor_compile_string:
         assert not result.ok
         assert result.error
         assert not result.output
+
+class TestFor_compile_string_with_custom_functions:
+    @pytest.mark.parametrize("syntax", [Syntax.INDENTED, Syntax.SCSS])
+    @pytest.mark.parametrize("style", [OutputStyle.EXPANDED, OutputStyle.COMPRESSED])
+    def test_default_calling(self, syntax: Syntax, style: OutputStyle):
+        source = here / "test-basics" / f"custom/style.{'sass' if syntax == Syntax.INDENTED else 'scss'}"
+        expect = here / "test-basics" / f"custom/style.{'compressed' if style == OutputStyle.COMPRESSED else 'expanded'}.css"
+        
+        def theme_option(name: str, default_value) -> Value:
+            from sass_embedded.protocol.embedded_sass_pb2 import SingletonValue
+            if name == 'nocover':
+                return Value(singleton=SingletonValue.TRUE)
+            # default_value is a Python type, need to convert back to Value
+            if isinstance(default_value, bool):
+                return Value(singleton=SingletonValue.TRUE if default_value else SingletonValue.FALSE)
+            return Value(singleton=SingletonValue.FALSE)
+        
+        def config(name: str, default_value) -> Value:
+            if name == 'cover-bg':
+                return Value(string=Value.String(text='#961a1a', quoted=False))
+            # default_value is a Python string, convert to Value
+            if isinstance(default_value, str):
+                return Value(string=Value.String(text=default_value, quoted=False))
+            return Value(string=Value.String(text='', quoted=False))
+        
+        M = Compiler()
+        result = M.compile_string(source.read_text(), syntax=syntax, style=style, custom_functions={"theme_option": theme_option, "config": config})  # type: ignore[arg-type]
+        assert result.output == expect.read_text()

@@ -16,7 +16,7 @@ import logging
 
 from ..dart_sass import Release
 from .embedded_sass_pb2 import OutboundMessage, InboundMessage
-from .embedded_sass_pb2 import Syntax, OutputStyle
+from .embedded_sass_pb2 import Syntax, OutputStyle, Value
 
 from ..simple import Result
 
@@ -28,6 +28,37 @@ if TYPE_CHECKING:
     from ..dart_sass import Executable
 
 logger = logging.getLogger(__name__)
+
+
+def value_to_python(value: Value):
+    """Convert Sass Value protobuf to Python type."""
+    from .embedded_sass_pb2 import SingletonValue
+    
+    which = value.WhichOneof('value')
+    if which == 'string':
+        return value.string.text
+    elif which == 'number':
+        return value.number.value
+    elif which == 'singleton':
+        # singleton is an enum: TRUE=0, FALSE=1, NULL=2
+        if value.singleton == SingletonValue.TRUE:
+            return True
+        elif value.singleton == SingletonValue.FALSE:
+            return False
+        else:  # NULL
+            return None
+    elif which == 'list':
+        return [value_to_python(v) for v in value.list.contents]
+    elif which == 'map':
+        return {value_to_python(e.key): value_to_python(e.value) for e in value.map.entries}
+    elif which == 'color':
+        # Return color as hex string for simplicity
+        c = value.color
+        if c.space == 'rgb':
+            return f"#{int(c.channel1):02x}{int(c.channel2):02x}{int(c.channel3):02x}"
+        return value  # Return as-is if not RGB
+    else:
+        return value  # Return protobuf object for unsupported types
 
 
 @dataclass
@@ -148,6 +179,7 @@ class Compiler():
         self._inbound_queue = asyncio.Queue()
         self._outbound_queue = asyncio.Queue()
         self._id = 1
+        self._current_compilation_id = 0  # Track current compilation ID for function responses
 
         self._scss_string: Optional[str] = None
         self._scss_url: Optional[str] = None
@@ -189,6 +221,7 @@ class Compiler():
                 
                 # second varint is the compilation id
                 cid, cidx = varint.decode_varint(data, length_idx)
+                self._current_compilation_id = cid  # Store for function responses
                 msg = OutboundMessage()
                 msg.ParseFromString(data[cidx:packet_end])
                 await self._outbound_queue.put(msg)
@@ -255,6 +288,22 @@ class Compiler():
 
     
 
+    async def writer(self):
+        """Write messages from inbound queue to Dart Sass stdin."""
+        while True:
+            inbound = await self._inbound_queue.get()
+            if inbound is None:
+                break
+            
+            # Function responses use the current compilation ID, other messages get new IDs
+            if inbound.WhichOneof('message') == 'function_call_response':
+                packet = Packet(compilation_id=self._current_compilation_id, message=inbound)
+            else:
+                packet = self.make_packet(inbound)
+            
+            self._async_proc.stdin.write(packet.to_bytes())
+            await self._async_proc.stdin.drain()
+
     async def run(self):
         """Send message to Dart Sass process asynchronously."""
 
@@ -273,17 +322,16 @@ class Compiler():
             bufsize=0,
         )
 
-        inbound = await self._inbound_queue.get() 
-        packet = self.make_packet(inbound)
-        self._async_proc.stdin.write(packet.to_bytes())  # type: ignore[union-
+        # Start reader, writer, and worker tasks
+        reader_task = asyncio.create_task(self.read_packets(self._async_proc.stdout))
+        writer_task = asyncio.create_task(self.writer())
+        worker_task = asyncio.create_task(self.worker())
 
-        # Read the response
-        await self.read_packets(self._async_proc.stdout)
+        await worker_task
 
-        task = asyncio.create_task(self.worker())
-
-        await task
-
+        # Cleanup
+        await self._inbound_queue.put(None)  # Signal writer to stop
+        await writer_task
         self._async_proc.stdin.close()
         await self._async_proc.wait()
 
@@ -326,9 +374,45 @@ class Compiler():
                 # Handle file import request if needed
                 pass
             if message.WhichOneof('message') == 'function_call_request':
-                logger.debug("Received function call request.")
-                # Handle function call request if needed
-                pass
+                logger.debug(f"Received function call request: {message.function_call_request.name}")
+
+                func_found = False
+                
+                for func in self._custom_functions:
+                    if func.name == message.function_call_request.name:
+                        func_found = True
+                        try:
+                            # Convert Value arguments to Python types
+                            args = [value_to_python(arg) for arg in message.function_call_request.arguments]
+
+                            # Call the function - it should return a Value protobuf
+                            result_value = func.callable_(*args)
+
+                            # Prepare response
+                            response = InboundMessage()
+                            response.function_call_response.id = message.function_call_request.id
+                            response.function_call_response.success.CopyFrom(result_value)
+                            
+                            # Send response back via inbound queue
+                            await self._inbound_queue.put(response)
+                        except Exception as e:
+                            logger.error(f"Error calling function {func.name}: {e}")
+                            # Send error response
+                            response = InboundMessage()
+                            response.function_call_response.id = message.function_call_request.id
+                            response.function_call_response.error = str(e)
+                            await self._inbound_queue.put(response)
+                        break
+                
+                if not func_found:
+                    logger.error(f"Function {message.function_call_request.name} not found")
+                    # Send error response
+                    response = InboundMessage()
+                    response.function_call_response.id = message.function_call_request.id
+                    response.function_call_response.error = f"Function {message.function_call_request.name} not found"
+                    await self._inbound_queue.put(response)
+                # Continue processing more messages - don't break out of while loop
+ 
             if message.WhichOneof('message') == 'canonicalize_request':
                 logger.debug("Received canonicalize request.")
                 # Handle async function call request if needed
@@ -355,13 +439,16 @@ class Compiler():
                        load_paths: Optional[list[Path]] = None,
                        style: OutputStyle = OutputStyle.EXPANDED,
                        embed_sourcemap: bool = False,
-                       embed_sources: bool = False) -> Result[str]:
+                       embed_sources: bool = False,
+                       custom_functions: Sequence[SassFunction] | dict = None,
+                       ) -> Result:
         """Compile SCSS string to CSS.
 
         :param source: SCSS source string.
         :param syntax: Syntax of the source string (SCSS or SASS).
         :param embed_sourcemap: Whether to embed source map.
         :param embed_sources: Whether to embed sources in source map.
+        :param custom_functions: Custom Sass functions as SassFunction objects or dict.
         :returns: Compiled CSS string.
         :rtype: str
         """
@@ -372,6 +459,15 @@ class Compiler():
         self._scss_output_style = style
         self._source_map = embed_sourcemap
         self._embed_sources = embed_sources
+        if custom_functions:
+            # Convert dict to SassFunction objects if needed
+            if isinstance(custom_functions, dict):
+                self._custom_functions = [
+                    SassFunction.from_lambda(name, func)
+                    for name, func in custom_functions.items()
+                ]
+            else:
+                self._custom_functions = custom_functions
 
         async def _compile():
             await self.create_compile_request()

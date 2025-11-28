@@ -99,7 +99,7 @@ class TestFor_compie_string:
         assert not result.output
 
 
-class TestFor_compie_file:
+class TestFor_compile_file:
     @pytest.mark.parametrize("target", targets)
     @pytest.mark.parametrize("syntax", ["sass", "scss"])
     @pytest.mark.parametrize("style", ["expanded", "compressed"])
