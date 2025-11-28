@@ -18,6 +18,8 @@ from ..dart_sass import Release
 from .embedded_sass_pb2 import OutboundMessage, InboundMessage
 from .embedded_sass_pb2 import Syntax, OutputStyle
 
+from ..simple import Result
+
 from .sass_function import SassFunction
 
 if TYPE_CHECKING:
@@ -148,17 +150,21 @@ class Compiler():
         self._id = 1
 
         self._scss_string: Optional[str] = None
+        self._scss_url: Optional[str] = None
         self._syntax: Syntax = Syntax.SCSS
 
         self._scss_path: Optional[Path] = None
-        self._scss_ouputStyle: OutputStyle = OutputStyle.EXPANDED
+        self._scss_output_style: OutputStyle = OutputStyle.EXPANDED
 
         self._source_map: bool = False
+        self._embed_sources: bool = False
         self._include_paths: list[Path] = []
 
         self._custom_functions: Sequence[SassFunction] = []
 
         self._versions: dict[str, str] = {}
+        self._css: Optional[str] = None
+        self._error: Optional[str] = None
 
 
 
@@ -227,20 +233,24 @@ class Compiler():
         else:
             raise RuntimeError("No SCSS source specified for compilation.")
         
-        request.compile_request.output_style = self._scss_ouputStyle
+        request.compile_request.style = self._scss_output_style
 
-        request.compile_request.source_map = self._source_map
+        if self._source_map or self._embed_sources:
+            request.compile_request.source_map = True
+        
+        if self._embed_sources:
+            request.compile_request.source_map_include_sources = True
 
         # add include paths
         for lp in self._include_paths:
             importer = request.compile_request.importers.add()
-            importer.path_importer.path = str(lp)
+            importer.path = str(lp)
 
         # add global functions
         for func in self._custom_functions:
             request.compile_request.global_functions.append(func.signature)
 
-        self._inbound_queue.put(request)
+        await self._inbound_queue.put(request)
 
 
     
@@ -291,7 +301,8 @@ class Compiler():
             if message.WhichOneof('message') == 'compile_response':
 
                 if message.compile_response.WhichOneof("result") == "failure":
-                    logger.error(f"Sass Compilation Failed: {message.compile_response.failure.message}")
+                    self._error = message.compile_response.failure.message
+                    logger.error(f"Sass Compilation Failed: {self._error}")
                     break
                 logger.debug("Received compile response.")
                 self._css = message.compile_response.success.css
@@ -336,5 +347,44 @@ class Compiler():
         asyncio.run(_get_version())
 
         return self._versions
+    
+    
+    def compile_string(self, 
+                       source: str, 
+                       syntax: Syntax = Syntax.SCSS, 
+                       load_paths: Optional[list[Path]] = None,
+                       style: OutputStyle = OutputStyle.EXPANDED,
+                       embed_sourcemap: bool = False,
+                       embed_sources: bool = False) -> Result[str]:
+        """Compile SCSS string to CSS.
+
+        :param source: SCSS source string.
+        :param syntax: Syntax of the source string (SCSS or SASS).
+        :param embed_sourcemap: Whether to embed source map.
+        :param embed_sources: Whether to embed sources in source map.
+        :returns: Compiled CSS string.
+        :rtype: str
+        """
+        self._scss_string = source
+        self._syntax = syntax
+        if load_paths:
+            self._include_paths = load_paths
+        self._scss_output_style = style
+        self._source_map = embed_sourcemap
+        self._embed_sources = embed_sources
+
+        async def _compile():
+            await self.create_compile_request()
+            await self.run()
+        
+        asyncio.run(_compile())
+
+        # Return error result if compilation failed
+        if self._error:
+            return Result(False, error=self._error)
+        
+        # Add trailing newline to match expected output format
+        css_output = self._css + '\n' if self._css and not self._css.endswith('\n') else self._css
+        return Result(True, output=css_output)
 
 
