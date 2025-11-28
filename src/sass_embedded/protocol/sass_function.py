@@ -2,6 +2,35 @@ import inspect
 from collections.abc import Sequence
 
 
+def value_to_python(value):
+    """Convert Sass Value protobuf to Python type."""
+    from .embedded_sass_pb2 import SingletonValue
+    
+    which = value.WhichOneof('value')
+    if which == 'string':
+        return value.string.text
+    elif which == 'number':
+        return value.number.value
+    elif which == 'singleton':
+        # singleton is an enum: TRUE=0, FALSE=1, NULL=2
+        if value.singleton == SingletonValue.TRUE:
+            return True
+        elif value.singleton == SingletonValue.FALSE:
+            return False
+        else:  # NULL
+            return None
+    elif which == 'list':
+        return [value_to_python(v) for v in value.list.contents]
+    elif which == 'map':
+        return {value_to_python(e.key): value_to_python(e.value) for e in value.map.entries}
+    elif which == 'color':
+        # Return color as hex string for simplicity
+        c = value.color
+        if c.space == 'rgb':
+            return f"#{int(c.channel1):02x}{int(c.channel2):02x}{int(c.channel3):02x}"
+        return value  # Return as-is if not RGB
+    else:
+        return value  # Return protobuf object for unsupported types
 
 
 class SassFunction:
