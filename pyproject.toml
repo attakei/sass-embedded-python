@@ -66,6 +66,20 @@ docs-dev = [
 [tool.hatch.build.targets.sdist]
 exclude = ["src/sass_embedded/dart_sass/_ext"]
 
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest>=8.3.5",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=sass_embedded {args:tests}"
+
+[tool.hatch.envs.hatch-test]
+dependencies = [
+    "pytest>=8.3.5",
+]
+
 [tool.ruff.format]
 exclude = [
     "embedded_sass_pb2.py",
