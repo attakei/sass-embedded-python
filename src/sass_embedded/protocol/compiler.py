@@ -231,7 +231,7 @@ class Compiler():
 
 
         elif self._scss_path:
-            request.compile_request.file.path = str(self._scss_path)
+            request.compile_request.path = str(self._scss_path)
         else:
             raise RuntimeError("No SCSS source specified for compilation.")
         
@@ -426,4 +426,59 @@ class Compiler():
         css_output = self._css + '\n' if self._css and not self._css.endswith('\n') else self._css
         return Result(True, output=css_output)
 
+    def compile_file(self,
+                     source: Path,
+                     dest: Path,
+                     load_paths: Optional[list[Path]] = None,
+                     syntax: Syntax = Syntax.SCSS,
+                     style: OutputStyle = OutputStyle.EXPANDED,
+                     embed_sourcemap: bool = False,
+                     embed_sources: bool = False,
+                     custom_functions: Sequence[SassFunction] | dict = None,
+                     ) -> Result:
+        """Compile SCSS file to CSS.
 
+        :param source: Path to SCSS source file.
+        :param dest: Path to CSS destination file.
+        :param load_paths: Additional load paths.
+        :param style: Output style.
+        :param embed_sourcemap: Whether to embed source map.
+        :param embed_sources: Whether to embed sources in source map.
+        :param custom_functions: Custom Sass functions as SassFunction objects or dict.
+        :returns: Compiled CSS string.
+        :rtype: str
+        """
+        self._scss_path = Path(source)
+        self._css_path = Path(dest)
+        self._syntax = syntax
+        if load_paths:
+            self._include_paths = load_paths
+        self._scss_output_style = style
+        self._source_map = embed_sourcemap
+        self._embed_sources = embed_sources
+        if custom_functions:
+            # Convert dict to SassFunction objects if needed
+            if isinstance(custom_functions, dict):
+                self._custom_functions = [
+                    SassFunction.from_lambda(name, func)
+                    for name, func in custom_functions.items()
+                ]
+            else:
+                self._custom_functions = custom_functions
+
+        async def _compile():
+            await self.create_compile_request()
+            await self.run()
+        
+        asyncio.run(_compile())
+
+        # Return error result if compilation failed
+        if self._error:
+            return Result(False, error=self._error)
+        
+        # Add trailing newline to match expected output format
+        css_output = self._css + '\n' if self._css and not self._css.endswith('\n') else self._css
+        
+        self._css_path.open('w', encoding='utf-8').write(css_output)
+        
+        return Result(True, output=self._css_path)

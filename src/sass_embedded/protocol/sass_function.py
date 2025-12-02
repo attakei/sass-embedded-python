@@ -1,10 +1,12 @@
 import inspect
 from collections.abc import Sequence
 
+from .embedded_sass_pb2 import SingletonValue, Value, ListSeparator
+
+
 
 def value_to_python(value):
     """Convert Sass Value protobuf to Python type."""
-    from .embedded_sass_pb2 import SingletonValue
     
     which = value.WhichOneof('value')
     if which == 'string':
@@ -31,7 +33,200 @@ def value_to_python(value):
         return value  # Return as-is if not RGB
     else:
         return value  # Return protobuf object for unsupported types
+    
+class SassString():
+    """Sass String wrapper for custom functions."""
 
+    def __init__(self, text, quoted=False):
+        self.text = text
+        self.quoted = quoted
+
+    def __init__(self, value: Value):
+        if value.WhichOneof('value') != 'string':
+            raise TypeError('Value is not a string')
+        self.text = value.string.text
+        self.quoted = value.string.quoted
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        value.string.text = str(self)
+        value.string.quoted = False
+
+        return value
+    
+    def __str__(self):
+        return self.text if not self.quoted else f'"{self.text}"'
+    
+class SassNumber():
+    """Sass Number wrapper for custom functions."""
+
+    def __init__(self, value: Value):
+        if value.WhichOneof('value') != 'number':
+            raise TypeError('Value is not a number')
+        self.value = value.number.value
+        self.numerators = list(value.number.numerators)
+        self.denominators = list(value.number.denominators)
+
+    def __init__(self, value: float, numerators: Sequence[str] = (), denominators: Sequence[str] = ()):
+        self.value = value
+        self.numerators = list(numerators)
+        self.denominators = list(denominators)
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        value.number.value = self.value
+        if self.numerators:
+            value.number.numerators.extend(self.numerators)
+        if self.denominators:
+            value.number.denominators.extend(self.denominators)
+
+        return value
+    
+    def __float__(self):
+        return float(self.value)
+    
+    def __int__(self):
+        return int(self.value)
+    
+class SassColor():
+    """Sass Color wrapper for custom functions."""
+
+    def __init__(self, value: Value):
+        if value.WhichOneof('value') != 'color':
+            raise TypeError('Value is not a color')
+        self.space = value.color.space
+        self.channel1 = value.color.channel1
+        self.channel2 = value.color.channel2
+        self.channel3 = value.color.channel3
+        self.alpha = value.color.alpha
+
+    def __init__(self, space: str, channel1: float, channel2: float, channel3: float, alpha: float = 1.0):
+        self.space = space
+        self.channel1 = channel1
+        self.channel2 = channel2
+        self.channel3 = channel3
+        self.alpha = alpha
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        value.color.space = self.space
+        value.color.channel1 = self.channel1
+        value.color.channel2 = self.channel2
+        value.color.channel3 = self.channel3
+        value.color.alpha = self.alpha
+
+        return value
+    
+class SassList():
+    """Sass List wrapper for custom functions."""
+
+    def __init__(self, value: Value):
+        if value.WhichOneof('value') != 'list':
+            raise TypeError('Value is not a list')
+        self.contents = [value_to_python(v) for v in value.list.contents]
+        self.separator = value.list.separator
+        self.has_brackets = value.list.has_brackets
+
+    def __init__(self, contents: Sequence, separator: ListSeparator = ListSeparator.COMMA, bracketed: bool = False):
+        self.contents = list(contents)
+        self.separator = separator
+        self.has_brackets = bracketed
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        value.list.separator = self.separator
+        value.list.has_brackets = self.has_brackets
+        for item in self.contents:
+            v = Value()
+            # Assuming item is already a Value protobuf or convertible
+            if isinstance(item, Value):
+                v.CopyFrom(item)
+            else:
+                # Simple conversion for basic types
+                if isinstance(item, str):
+                    v.string.text = item
+                elif isinstance(item, (int, float)):
+                    v.number.value = float(item)
+                elif isinstance(item, bool):
+                    v.singleton = SingletonValue.TRUE if item else SingletonValue.FALSE
+                else:
+                    raise TypeError(f'Unsupported list item type: {type(item)}')
+            value.list.contents.append(v)
+
+        return value
+    
+class SassMap():
+    """Sass Map wrapper for custom functions."""
+
+    def __init__(self, value: Value):
+        if value.WhichOneof('value') != 'map':
+            raise TypeError('Value is not a map')
+        self.entries = {
+            value_to_python(e.key): value_to_python(e.value)
+            for e in value.map.entries
+        }
+
+    def __init__(self, entries: dict):
+        self.entries = dict(entries)
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        for k, v in self.entries.items():
+            entry = value.map.entries.add()
+            # Assuming k and v are already Value protobufs or convertible
+            if isinstance(k, Value):
+                entry.key.CopyFrom(k)
+            else:
+                if isinstance(k, str):
+                    entry.key.string.text = k
+                elif isinstance(k, (int, float)):
+                    entry.key.number.value = float(k)
+                elif isinstance(k, bool):
+                    entry.key.singleton = SingletonValue.TRUE if k else SingletonValue.FALSE
+                else:
+                    raise TypeError(f'Unsupported map key type: {type(k)}')
+            if isinstance(v, Value):
+                entry.value.CopyFrom(v)
+            else:
+                if isinstance(v, str):
+                    entry.value.string.text = v
+                elif isinstance(v, (int, float)):
+                    entry.value.number.value = float(v)
+                elif isinstance(v, bool):
+                    entry.value.singleton = SingletonValue.TRUE if v else SingletonValue.FALSE
+                else:
+                    raise TypeError(f'Unsupported map value type: {type(v)}')
+
+        return value
+    
+class SassValue:
+    """Generic Sass Value wrapper for custom functions."""
+
+    def __init__(self, value: Value):
+        self.value = value
+    
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+        return self.value
+    
+    def to_python(self):
+        """Convert to Python type."""
+        return value_to_python(self.value)
 
 class SassFunction:
     """Custom function for Sass.  It can be instantiated using

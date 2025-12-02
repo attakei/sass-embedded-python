@@ -143,3 +143,16 @@ class TestFor_compile_string_with_custom_functions:
         M = Compiler()
         result = M.compile_string(source.read_text(), syntax=syntax, style=style, custom_functions={"theme_option": theme_option, "config": config})  # type: ignore[arg-type]
         assert result.output == expect.read_text()
+
+class TestFor_compile_file:
+    @pytest.mark.parametrize("target", targets)
+    @pytest.mark.parametrize("syntax", [Syntax.INDENTED, Syntax.SCSS])
+    @pytest.mark.parametrize("style", [OutputStyle.EXPANDED, OutputStyle.COMPRESSED])
+    def test_default_calling(self, target: str, syntax: Syntax, style: OutputStyle, tmpdir: Path):
+        source = here / "test-basics" / f"{target}/style.{'sass' if syntax == Syntax.INDENTED else 'scss'}"
+        expect = here / "test-basics" / f"{target}/style.{'compressed' if style == OutputStyle.COMPRESSED else 'expanded'}.css"
+        dest = tmpdir / f"{target}.css"
+        M = Compiler()
+        result = M.compile_file(source, dest, syntax=syntax, style=style)  # type: ignore[arg-type]
+        assert result.output
+        assert expect.read_text().strip() in result.output.read_text().strip()
