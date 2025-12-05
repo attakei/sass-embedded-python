@@ -48,7 +48,7 @@ class SassFunction:
 
     """
 
-    __slots__ = 'name', 'arguments', 'callable_'
+    __slots__ = 'name', 'arguments', 'callable_', '_original_callable'
 
     @classmethod
     def from_lambda(cls, name, lambda_):
@@ -107,7 +107,45 @@ class SassFunction:
             arg if arg.startswith('$') else '$' + arg
             for arg in arguments
         )
-        self.callable_ = callable_
+        # Wrap the callable to handle protobuf arguments
+        self._original_callable = callable_
+        self.callable_ = self._make_wrapper(callable_)
+
+    def _make_wrapper(self, func):
+        """Create a wrapper that converts protobuf arguments to Python types."""
+        def wrapper(protobuf_args):
+            # Convert protobuf Value objects to Python types
+            python_args = [value_to_python(arg) for arg in protobuf_args]
+            # Call the original function with converted args
+            result = func(*python_args)
+            # Convert result back to protobuf Value
+            return self._python_to_value(result)
+        return wrapper
+
+    def _python_to_value(self, py_value):
+        """Convert Python value to Sass Value protobuf."""
+        from .embedded_sass_pb2 import Value, SingletonValue
+        
+        value = Value()
+        if isinstance(py_value, bool):
+            value.singleton = SingletonValue.TRUE if py_value else SingletonValue.FALSE
+        elif py_value is None:
+            value.singleton = SingletonValue.NULL
+        elif isinstance(py_value, str):
+            value.string.text = py_value
+        elif isinstance(py_value, (int, float)):
+            value.number.value = float(py_value)
+        elif isinstance(py_value, list):
+            for item in py_value:
+                value.list.contents.append(self._python_to_value(item))
+        elif isinstance(py_value, dict):
+            for k, v in py_value.items():
+                entry = value.map.entries.add()
+                entry.key.CopyFrom(self._python_to_value(k))
+                entry.value.CopyFrom(self._python_to_value(v))
+        else:
+            raise TypeError(f"Unsupported return type: {type(py_value)}")
+        return value
 
     @property
     def signature(self):
