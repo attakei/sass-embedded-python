@@ -1,8 +1,7 @@
 {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.hatch/sass-embedded/bin/python",
-    "python.testing.pytestArgs": [
-        "tests"
-    ],
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    "python.testing.pytestArgs": ["tests"],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.envFile": "${workspaceFolder}/.env"
 }
