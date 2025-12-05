@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from sass_embedded.protocol.compiler import Compiler 
+from sass_embedded.protocol.sass_function import SassString, SassNumber, SassColor, SassBoolean
 from sass_embedded.protocol.embedded_sass_pb2 import Syntax, OutputStyle, Value
 
 here = Path(__file__).parent
@@ -123,22 +124,22 @@ class TestFor_compile_string_with_custom_functions:
         source = here / "test-basics" / f"custom/style.{'sass' if syntax == Syntax.INDENTED else 'scss'}"
         expect = here / "test-basics" / f"custom/style.{'compressed' if style == OutputStyle.COMPRESSED else 'expanded'}.css"
         
-        def theme_option(name: str, default_value) -> Value:
+        def theme_option(name: SassString, default_value) -> Value:
             from sass_embedded.protocol.embedded_sass_pb2 import SingletonValue
             if name == 'nocover':
-                return Value(singleton=SingletonValue.TRUE)
+                return SassBoolean(value=True).to_value()
             # default_value is a Python type, need to convert back to Value
             if isinstance(default_value, bool):
-                return Value(singleton=SingletonValue.TRUE if default_value else SingletonValue.FALSE)
-            return Value(singleton=SingletonValue.FALSE)
+                return SassBoolean(value=default_value).to_value()
+            return SassBoolean(value=False).to_value()
         
-        def config(name: str, default_value) -> Value:
+        def config(name: SassString, default_value) -> Value:
             if name == 'cover-bg':
-                return Value(string=Value.String(text='#961a1a', quoted=False))
+                return SassColor(value_or_space="#961a1a").to_value()
             # default_value is a Python string, convert to Value
             if isinstance(default_value, str):
-                return Value(string=Value.String(text=default_value, quoted=False))
-            return Value(string=Value.String(text='', quoted=False))
+                return SassString(text_or_value=default_value).to_value()
+            return SassString(text_or_value='').to_value()
         
         M = Compiler()
         result = M.compile_string(source.read_text(), syntax=syntax, style=style, custom_functions={"theme_option": theme_option, "config": config})  # type: ignore[arg-type]

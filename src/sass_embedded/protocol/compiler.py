@@ -295,8 +295,7 @@ class Compiler():
                         if func.name == message.function_call_request.name:
                             func_found = True
                             try:
-                                args = [value_to_python(arg) for arg in message.function_call_request.arguments]
-                                result_value = func.callable_(*args)
+                                result_value = func.callable_(message.function_call_request.arguments)
                                 response = InboundMessage()
                                 response.function_call_response.id = message.function_call_request.id
                                 response.function_call_response.success.CopyFrom(result_value)

@@ -1,4 +1,5 @@
 import inspect
+from typing import get_type_hints
 from collections.abc import Sequence
 
 from .embedded_sass_pb2 import SingletonValue, Value, ListSeparator
@@ -33,19 +34,47 @@ def value_to_python(value):
         return value  # Return as-is if not RGB
     else:
         return value  # Return protobuf object for unsupported types
+
+class SassBoolean():
+    """Sass Boolean wrapper for custom functions."""
+
+    def __init__(self, value):
+        if isinstance(value, Value):
+            if value.WhichOneof('value') != 'singleton':
+                raise TypeError('Value is not a singleton')
+            if value.singleton == SingletonValue.TRUE:
+                self.value = True
+            elif value.singleton == SingletonValue.FALSE:
+                self.value = False
+            else:
+                raise TypeError('Value is not a boolean singleton')
+        else:
+            self.value = bool(value)
     
+    def to_value(self):
+        """Convert to Sass Value protobuf."""
+
+        value = Value()
+
+        value.singleton = SingletonValue.TRUE if self.value else SingletonValue.FALSE
+
+        return value
+    
+    def __bool__(self):
+        return self.value
+        
 class SassString():
     """Sass String wrapper for custom functions."""
 
-    def __init__(self, text, quoted=False):
-        self.text = text
-        self.quoted = quoted
-
-    def __init__(self, value: Value):
-        if value.WhichOneof('value') != 'string':
-            raise TypeError('Value is not a string')
-        self.text = value.string.text
-        self.quoted = value.string.quoted
+    def __init__(self, text_or_value, quoted=False):
+        if isinstance(text_or_value, Value):
+            if text_or_value.WhichOneof('value') != 'string':
+                raise TypeError('Value is not a string')
+            self.text = text_or_value.string.text
+            self.quoted = text_or_value.string.quoted
+        else:
+            self.text = text_or_value
+            self.quoted = quoted
     
     def to_value(self):
         """Convert to Sass Value protobuf."""
@@ -59,21 +88,31 @@ class SassString():
     
     def __str__(self):
         return self.text if not self.quoted else f'"{self.text}"'
+
+    def __eq__(self, other):
+        if isinstance(other, SassString):
+            return self.text == other.text
+        if isinstance(other, str):
+            return self.text == other.strip('"\'')
+        return False
+
+    def __hash__(self):  # allow use as dict key
+        return hash(self.text)
     
 class SassNumber():
     """Sass Number wrapper for custom functions."""
 
-    def __init__(self, value: Value):
-        if value.WhichOneof('value') != 'number':
-            raise TypeError('Value is not a number')
-        self.value = value.number.value
-        self.numerators = list(value.number.numerators)
-        self.denominators = list(value.number.denominators)
-
-    def __init__(self, value: float, numerators: Sequence[str] = (), denominators: Sequence[str] = ()):
-        self.value = value
-        self.numerators = list(numerators)
-        self.denominators = list(denominators)
+    def __init__(self, value, numerators: Sequence[str] = (), denominators: Sequence[str] = ()):
+        if isinstance(value, Value):
+            if value.WhichOneof('value') != 'number':
+                raise TypeError('Value is not a number')
+            self.value = value.number.value
+            self.numerators = list(value.number.numerators)
+            self.denominators = list(value.number.denominators)
+        else:
+            self.value = float(value)
+            self.numerators = list(numerators)
+            self.denominators = list(denominators)
     
     def to_value(self):
         """Convert to Sass Value protobuf."""
@@ -97,21 +136,36 @@ class SassNumber():
 class SassColor():
     """Sass Color wrapper for custom functions."""
 
-    def __init__(self, value: Value):
-        if value.WhichOneof('value') != 'color':
-            raise TypeError('Value is not a color')
-        self.space = value.color.space
-        self.channel1 = value.color.channel1
-        self.channel2 = value.color.channel2
-        self.channel3 = value.color.channel3
-        self.alpha = value.color.alpha
+    def __init__(self, value_or_space, channel1=None, channel2=None, channel3=None, alpha=1.0):
+        if isinstance(value_or_space, Value):
+            if value_or_space.WhichOneof('value') != 'color':
+                raise TypeError('Value is not a color')
+            self.space = value_or_space.color.space
+            self.channel1 = value_or_space.color.channel1
+            self.channel2 = value_or_space.color.channel2
+            self.channel3 = value_or_space.color.channel3
+            self.alpha = value_or_space.color.alpha
+        else:
+            # Allow hex string like "#rrggbb"
+            if isinstance(value_or_space, str) and channel1 is None and channel2 is None and channel3 is None:
+                hex_str = value_or_space.lstrip('#')
+                if len(hex_str) == 6:
+                    self.space = 'rgb'
+                    self.channel1 = int(hex_str[0:2], 16)
+                    self.channel2 = int(hex_str[2:4], 16)
+                    self.channel3 = int(hex_str[4:6], 16)
+                    self.alpha = alpha
+                    return
+                else:
+                    raise TypeError('Hex color must be in #RRGGBB format')
 
-    def __init__(self, space: str, channel1: float, channel2: float, channel3: float, alpha: float = 1.0):
-        self.space = space
-        self.channel1 = channel1
-        self.channel2 = channel2
-        self.channel3 = channel3
-        self.alpha = alpha
+            if channel1 is None or channel2 is None or channel3 is None:
+                raise TypeError('channel1, channel2, and channel3 are required when creating from values')
+            self.space = value_or_space
+            self.channel1 = channel1
+            self.channel2 = channel2
+            self.channel3 = channel3
+            self.alpha = alpha
     
     def to_value(self):
         """Convert to Sass Value protobuf."""
@@ -129,17 +183,17 @@ class SassColor():
 class SassList():
     """Sass List wrapper for custom functions."""
 
-    def __init__(self, value: Value):
-        if value.WhichOneof('value') != 'list':
-            raise TypeError('Value is not a list')
-        self.contents = [value_to_python(v) for v in value.list.contents]
-        self.separator = value.list.separator
-        self.has_brackets = value.list.has_brackets
-
-    def __init__(self, contents: Sequence, separator: ListSeparator = ListSeparator.COMMA, bracketed: bool = False):
-        self.contents = list(contents)
-        self.separator = separator
-        self.has_brackets = bracketed
+    def __init__(self, contents_or_value, separator: ListSeparator = ListSeparator.COMMA, bracketed: bool = False):
+        if isinstance(contents_or_value, Value):
+            if contents_or_value.WhichOneof('value') != 'list':
+                raise TypeError('Value is not a list')
+            self.contents = [value_to_python(v) for v in contents_or_value.list.contents]
+            self.separator = contents_or_value.list.separator
+            self.has_brackets = contents_or_value.list.has_brackets
+        else:
+            self.contents = list(contents_or_value)
+            self.separator = separator
+            self.has_brackets = bracketed
     
     def to_value(self):
         """Convert to Sass Value protobuf."""
@@ -170,16 +224,16 @@ class SassList():
 class SassMap():
     """Sass Map wrapper for custom functions."""
 
-    def __init__(self, value: Value):
-        if value.WhichOneof('value') != 'map':
-            raise TypeError('Value is not a map')
-        self.entries = {
-            value_to_python(e.key): value_to_python(e.value)
-            for e in value.map.entries
-        }
-
-    def __init__(self, entries: dict):
-        self.entries = dict(entries)
+    def __init__(self, entries_or_value):
+        if isinstance(entries_or_value, Value):
+            if entries_or_value.WhichOneof('value') != 'map':
+                raise TypeError('Value is not a map')
+            self.entries = {
+                value_to_python(e.key): value_to_python(e.value)
+                for e in entries_or_value.map.entries
+            }
+        else:
+            self.entries = dict(entries_or_value)
     
     def to_value(self):
         """Convert to Sass Value protobuf."""
@@ -307,20 +361,51 @@ class SassFunction:
         self.callable_ = self._make_wrapper(callable_)
 
     def _make_wrapper(self, func):
-        """Create a wrapper that converts protobuf arguments to Python types."""
+        """Create a wrapper that converts protobuf arguments to Python types.
+
+        Conversion is guided by the function's type hints when available.
+        """
+        hints = get_type_hints(func)
+        params = list(inspect.signature(func).parameters.values())
+
         def wrapper(protobuf_args):
-            # Convert protobuf Value objects to Python types
-            python_args = [value_to_python(arg) for arg in protobuf_args]
-            # Call the original function with converted args
+            python_args = []
+            for i, arg in enumerate(protobuf_args):
+                target_type = hints.get(params[i].name) if i < len(params) else None
+
+                if target_type is Value:
+                    python_args.append(arg)
+                elif target_type is SassString:
+                    python_args.append(SassString(arg))
+                elif target_type is SassNumber:
+                    python_args.append(SassNumber(arg))
+                elif target_type is SassColor:
+                    python_args.append(SassColor(arg))
+                elif target_type is SassList:
+                    python_args.append(SassList(arg))
+                elif target_type is SassMap:
+                    python_args.append(SassMap(arg))
+                else:
+                    python_args.append(value_to_python(arg))
+
             result = func(*python_args)
-            # Convert result back to protobuf Value
             return self._python_to_value(result)
+
         return wrapper
 
     def _python_to_value(self, py_value):
         """Convert Python value to Sass Value protobuf."""
         from .embedded_sass_pb2 import Value, SingletonValue
         
+        # Check if it's already a Sass wrapper class
+        if hasattr(py_value, 'to_value') and callable(py_value.to_value):
+            return py_value.to_value()
+        
+        # Allow raw protobuf Value to pass through untouched
+        if isinstance(py_value, Value):
+            return py_value
+
+        # Otherwise convert based on Python type
         value = Value()
         if isinstance(py_value, bool):
             value.singleton = SingletonValue.TRUE if py_value else SingletonValue.FALSE

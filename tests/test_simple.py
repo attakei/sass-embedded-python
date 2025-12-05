@@ -11,7 +11,7 @@ here = Path(__file__).parent
 targets = [
     d.name
     for d in (here / "test-basics").glob("*")
-    if d.is_dir() and d.stem not in ["modules"]
+    if d.is_dir() and d.stem not in ["modules", "custom"]
 ]
 
 
