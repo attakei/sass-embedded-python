@@ -99,7 +99,7 @@ class Host:
         # Sending packet.
         packet = self.make_packet(message)
         self._proc.stdin.write(packet.to_bytes())  # type: ignore[union-attr]
-        # Recieve packet.
+        # Receive packet.
         out = b""
         idx = 0
         length = 0
