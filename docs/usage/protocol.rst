@@ -12,7 +12,7 @@ Currently, this project supports low-level protocol access.
    **Under construction**
 
    This API will be implemented to work correctly,
-   but it is only to send and recieve protobuf message.
+   but it is only to send and receive protobuf message.
 
    If you want to know usage now, See `example code`_.
 

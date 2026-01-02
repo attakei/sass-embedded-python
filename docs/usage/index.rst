@@ -8,7 +8,7 @@ Usage guide
    When you install by sdist, none-any bdist or source,
    you need to install it manually.
 
-There are some usage for ``sass-embbedded``.
+There are some usage for ``sass-embedded``.
 
 .. toctree::
    :maxdepth: 2
