@@ -22,7 +22,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f  # v4.0.2
         with:
-          aqua_version: v2.53.3
+          aqua_version: v2.56.4
       - name: 'Configure dependencies'
         run: |
           uv sync --frozen --all-extras
@@ -57,7 +57,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f  # v4.0.2
         with:
-          aqua_version: v2.53.3
+          aqua_version: v2.56.4
       - name: 'Configure workspace'
         run: |
           echo ${{ matrix.python }} > .python-version
@@ -96,7 +96,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f  # v4.0.2
         with:
-          aqua_version: v2.53.3
+          aqua_version: v2.56.4
       - name: 'Configure dependencies'
         run: |
           task setup-dev
