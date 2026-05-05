@@ -85,3 +85,9 @@ dependencies = [
 exclude = [
     "embedded_sass_pb2.py",
 ]
+
+[tool.hatch.publish.index]
+repo = "https://git.escad-group.com/api/packages/spienx/pypi"
+
+[tool.hatch.publish.index.repos.spienx]
+url = "https://git.escad-group.com/api/packages/spienx/pypi"
