@@ -140,9 +140,9 @@ def compile_string(
 ) -> Result[str]:
     """Convert from Sass/SCSS source to CSS.
 
-    :param srouce: Source text. It must be format for Sass or SCSS.
+    :param source: Source text. It must be format for Sass or SCSS.
     :param syntax: Source format.
-    :param load_paths: List of addtional load path for Sass compile.
+    :param load_paths: List of additional load path for Sass compile.
     :param style: Output style.
     :param embed_sourcemap: Flag to embed source-map into output.
     :param embed_sources: Flag to embed sources into output. It works only when ``embed_sourcemap`` is ``True``.
@@ -181,7 +181,7 @@ def compile_file(
 
     :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
     :param dest: Output destination.
-    :param load_paths: List of addtional load path for Sass compile.
+    :param load_paths: List of additional load path for Sass compile.
     :param style: Output style.
     :param no_sourcemap: Flag to skip generating source-map.
     :param embed_sourcemap: Flag to embed source-map into output.
@@ -227,7 +227,7 @@ def compile_directory(
 
     :param source: Source path. It must have extension ``.sass``, ``.scss`` or ``.css``.
     :param dest: Output destination.
-    :param load_paths: List of addtional load path for Sass compile.
+    :param load_paths: List of additional load path for Sass compile.
     :param style: Output style.
     :param no_sourcemap: Flag to skip generating source-maps.
     :param embed_sourcemap: Flag to embed source-map into output.

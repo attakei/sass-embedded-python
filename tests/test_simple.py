@@ -174,8 +174,8 @@ class TestFor_compile_directory:
         cmp = filecmp.dircmp(output, expected)
         output_files = list(Path(output).glob("*.css"))
         output_maps = list(Path(output).glob("*.css.map"))
-        expexted_files = list(Path(expected).glob("*"))
-        assert len(expexted_files) == len(output_files)
+        expected_files = list(Path(expected).glob("*"))
+        assert len(expected_files) == len(output_files)
         assert len(output_files) == len(output_maps)
         assert cmp.left_only == sorted([f.name for f in output_maps])
 
@@ -184,8 +184,8 @@ class TestFor_compile_directory:
         M.compile_directory(source, output, no_sourcemap=True)
         output_files = list(Path(output).glob("*.css"))
         output_maps = list(Path(output).glob("*.css.map"))
-        expexted_files = list(Path(expected).glob("*"))
-        assert len(expexted_files) == len(output_files)
+        expected_files = list(Path(expected).glob("*"))
+        assert len(expected_files) == len(output_files)
         assert not output_maps
 
     def test_with_embed_sourcemap(self, tmpdir: Path):
@@ -193,8 +193,8 @@ class TestFor_compile_directory:
         M.compile_directory(source, output, embed_sourcemap=True)
         output_files = list(Path(output).glob("*.css"))
         output_maps = list(Path(output).glob("*.css.map"))
-        expexted_files = list(Path(expected).glob("*"))
-        assert len(expexted_files) == len(output_files)
+        expected_files = list(Path(expected).glob("*"))
+        assert len(expected_files) == len(output_files)
         assert not output_maps
 
     def test_with_embed_sources(self, tmpdir: Path):

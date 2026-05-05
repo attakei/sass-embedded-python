@@ -21,7 +21,7 @@ def main() -> int:
     # Fetch protocol file.
     resp = urlopen(PROTOCOL_FILE_URL)
     if resp.status != 200:
-        sys.stderr.write("Failed to fetch protcol file.\n")
+        sys.stderr.write("Failed to fetch protocol file.\n")
         return 1
     proto_dir = Path(tempfile.mkdtemp())
     proto_path = proto_dir / "embedded_sass.proto"
