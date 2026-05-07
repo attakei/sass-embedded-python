@@ -169,33 +169,61 @@ class Compiler():
 
 
 
+    def _extract_packet(self, data: bytes) -> tuple[int, OutboundMessage, int] | None:
+        """Try to extract a complete packet from buffered bytes.
+
+        Returns ``None`` when the buffer does not yet contain a full packet.
+        """
+        try:
+            length, length_idx = varint.decode_varint(data, 0)
+        except Exception:
+            return None
+
+        packet_end = length_idx + length
+        if len(data) < packet_end:
+            return None
+
+        try:
+            cid, cidx = varint.decode_varint(data, length_idx)
+        except Exception:
+            return None
+
+        msg = OutboundMessage()
+        msg.ParseFromString(data[cidx:packet_end])
+        return cid, msg, packet_end
+
     async def read_packets(self, stdout):
         logger.debug("reading packets...")
 
         data = b""
 
-        while self._async_proc.returncode is None:
-            try:
-                data +=await asyncio.wait_for(stdout.read(8), timeout=1.0)
-                if not data:
-                    break
-            except asyncio.TimeoutError:
+        while True:
+            if self._async_proc.returncode is not None and not data:
                 break
 
+            try:
+                chunk = await asyncio.wait_for(stdout.read(4096), timeout=0.1)
+            except asyncio.TimeoutError:
+                await asyncio.sleep(0.001)
+                continue
 
-            length, length_idx = varint.decode_varint(data, 0)
-            packet_end = length_idx + length
-            # full packet received
-            if length <= len(data[length_idx:]):
-                
-                # second varint is the compilation id
-                cid, cidx = varint.decode_varint(data, length_idx)
-                self._current_compilation_id = cid  # Store for function responses
-                msg = OutboundMessage()
-                msg.ParseFromString(data[cidx:packet_end])
+            if not chunk:
+                if self._async_proc.returncode is not None:
+                    break
+                await asyncio.sleep(0.001)
+                continue
+
+            data += chunk
+
+            while True:
+                packet = self._extract_packet(data)
+                if packet is None:
+                    break
+
+                cid, msg, consumed = packet
+                self._current_compilation_id = cid
                 await self._outbound_queue.put(msg)
-
-                data = data[packet_end:]
+                data = data[consumed:]
   
     def make_packet(self, message: InboundMessage) -> Packet:
         """Convert from protobuf message to packet structure.
@@ -350,15 +378,37 @@ class Compiler():
             bufsize=0,
         )
 
-        # Run reader and message processor concurrently
-        await asyncio.gather(
-            self.read_packets(self._async_proc.stdout),
-            self.process_messages(),
-        )
+        reader_task = asyncio.create_task(self.read_packets(self._async_proc.stdout))
+        processor_task = asyncio.create_task(self.process_messages())
 
-        # Cleanup
-        self._async_proc.stdin.close()
+        # Wait until we have processed the expected response for this request.
+        await processor_task
+
+        # Signal EOF so Dart Sass can end cleanly for this one-shot session.
+        if self._async_proc.stdin:
+            self._async_proc.stdin.close()
+
+        # Reader should finish quickly after stdin close. Cancel if it lingers.
+        try:
+            await asyncio.wait_for(reader_task, timeout=1.0)
+        except asyncio.TimeoutError:
+            reader_task.cancel()
+            try:
+                await reader_task
+            except asyncio.CancelledError:
+                pass
+
         await self._async_proc.wait()
+
+    def _reset_run_state(self) -> None:
+        """Reset state for a new protocol session."""
+        self._async_proc = None
+        self._inbound_queue = asyncio.Queue()
+        self._outbound_queue = asyncio.Queue()
+        self._id = 1
+        self._current_compilation_id = 0
+        self._css = None
+        self._error = None
 
     def get_version_info(self) -> dict[str, str]:
         """Get version information from Dart Sass process.
@@ -366,6 +416,8 @@ class Compiler():
         :returns: A dictionary containing version information.
         :rtype: dict[str, str]
         """
+        self._reset_run_state()
+
         async def _get_version():
             await self.create_version_request()
             await self.run()
@@ -394,10 +446,15 @@ class Compiler():
         :returns: Compiled CSS string.
         :rtype: str
         """
+        self._reset_run_state()
+
         self._scss_string = source
+        self._scss_path = None
         self._syntax = syntax
         if load_paths:
             self._include_paths = load_paths
+        else:
+            self._include_paths = []
         self._scss_output_style = style
         self._source_map = embed_sourcemap
         self._embed_sources = embed_sources
@@ -447,11 +504,16 @@ class Compiler():
         :returns: Compiled CSS string.
         :rtype: str
         """
+        self._reset_run_state()
+
+        self._scss_string = None
         self._scss_path = Path(source)
         self._css_path = Path(dest)
         self._syntax = syntax
         if load_paths:
             self._include_paths = load_paths
+        else:
+            self._include_paths = []
         self._scss_output_style = style
         self._source_map = embed_sourcemap
         self._embed_sources = embed_sources
