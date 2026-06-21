@@ -84,6 +84,39 @@ jobs:
           cd /opt/repo
           uv run python -m sass_embedded.dart_sass
           uv run pytest
+  env-coverage-test:
+    needs: 'lint'
+    runs-on: '${{ matrix.runner }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: 'ubuntu-latest',    expected_os: 'linux',   expected_arch: 'x64'   }
+          - { runner: 'ubuntu-24.04-arm', expected_os: 'linux',   expected_arch: 'arm64' }
+          - { runner: 'windows-latest',   expected_os: 'windows', expected_arch: 'x64'   }
+          - { runner: 'windows-11-arm',   expected_os: 'windows', expected_arch: 'arm64' }
+          - { runner: 'macos-latest',     expected_os: 'macos',   expected_arch: 'arm64' }
+          - { runner: 'macos-13',         expected_os: 'macos',   expected_arch: 'x64'   }
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v5
+        with:
+          path: ~/.local/share/aquaproj-aqua
+          key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
+          restore-keys: |
+            v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
+      - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f  # v4.0.2
+        with:
+          aqua_version: v2.60.1
+      - name: 'Configure workspace'
+        run: |
+          uv sync --frozen
+      - name: 'Run env dispatch tests'
+        env:
+          EXPECTED_OS: ${{ matrix.expected_os }}
+          EXPECTED_ARCH: ${{ matrix.expected_arch }}
+        run: |
+          uv run pytest tests/test_env_dispatch.py -v
   doc-test:
     runs-on: ubuntu-latest
     steps:
