@@ -41,6 +41,9 @@ def resolve_arch() -> ArchName:
         arch_name = "x64"
     if arch_name.startswith("arm") and arch_name != "arm64":
         arch_name = "arm"
+    if arch_name == 'aarch64':
+        # see https://github.com/attakei/sass-embedded-python/issues/39
+        arch_name = 'arm64'
     return arch_name  # type: ignore[return-value]
 
 
