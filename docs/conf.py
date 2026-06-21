@@ -26,4 +26,5 @@ linkcheck_ignore = [
     "https://github.com/sass/sass/blob/main/spec/embedded-protocol.md#",
     "https://github.com/attakei/sass-embedded-python/blob/main/examples/use_protocol.py",
     "https://pypi.org/project/sass-embedded",  # Until published.
+    "https://sass-lang.com/",  # Connection error on GitHub Actions.
 ]
