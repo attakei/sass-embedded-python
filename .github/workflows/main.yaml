@@ -29,17 +29,12 @@ jobs:
       - name: 'Run linters'
         run: |
           lefthook run pre-commit --all-files  prebuild:
-  test:
+  python-test:
     needs: 'lint'
-    runs-on: '${{ matrix.runner }}'
+    runs-on: 'ubuntu-latest'
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
-        runner:
-          - 'ubuntu-latest'
-          - 'windows-latest'
-          - 'macos-latest'
-          - 'macos-13'
         python:
           - '3.9'
           - '3.10'
@@ -62,6 +57,33 @@ jobs:
         run: |
           echo ${{ matrix.python }} > .python-version
           uv sync --all-groups --all-extras ${{ (matrix.workspace == 'latest' && '-U') || '--frozen' }}
+          uv run python -m sass_embedded.dart_sass
+      - name: 'Run test'
+        run: |
+          uv run pytest
+  os-smoke-test:
+    needs: 'lint'
+    runs-on: '${{ matrix.runner }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - 'windows-latest'
+          - 'macos-latest'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/aquaproj-aqua
+          key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
+          restore-keys: |
+            v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
+      - uses: aquaproj/aqua-installer@d1fe50798dbadd4eb5b98957290ca175f6b4870f  # v4.0.2
+        with:
+          aqua_version: v2.53.3
+      - name: 'Configure workspace'
+        run: |
+          uv sync --frozen --all-groups --all-extras
           uv run python -m sass_embedded.dart_sass
       - name: 'Run test'
         run: |
