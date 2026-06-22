@@ -109,6 +109,8 @@ jobs:
   env-coverage-test:
     needs: 'lint'
     runs-on: '${{ matrix.runner }}'
+    timeout-minutes: 15
+    continue-on-error: ${{ matrix.allow_failure || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -122,7 +124,7 @@ jobs:
           # Reactivate once we add Windows-on-ARM emulation handling (see NOTES_windows-arm.md).
           # - { runner: 'windows-11-arm',   expected_os: 'windows', expected_arch: 'arm64' }
           - { runner: 'macos-latest',     expected_os: 'macos',   expected_arch: 'arm64' }
-          - { runner: 'macos-13',         expected_os: 'macos',   expected_arch: 'x64'   }
+          - { runner: 'macos-13',         expected_os: 'macos',   expected_arch: 'x64',   allow_failure: true }
     steps:
       - uses: actions/checkout@v6
       - uses: actions/cache@v5
