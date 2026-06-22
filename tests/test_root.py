@@ -21,6 +21,7 @@ def test_compile_string(target: str, syntax: str, style: str):
     source = here / "test-basics" / f"{target}/style.{syntax}"
     expect = here / "test-basics" / f"{target}/style.{style}.css"
     result = M.compile_string(source.read_text(), syntax=syntax, style=style)  # type: ignore[arg-type]
+    print(result.error)
     assert result.output
     assert result.output == expect.read_text()
 
@@ -33,6 +34,7 @@ def test_compile_file(target: str, syntax: str, style: str, tmpdir: Path):
     expect = here / "test-basics" / f"{target}/style.{style}.css"
     dest = tmpdir / f"{target}.css"
     result = M.compile_file(source, dest, style=style)  # type: ignore[arg-type]
+    print(result.error)
     assert result.output
     assert expect.read_text().strip() in result.output.read_text().strip()
 
@@ -55,6 +57,7 @@ def test_compile_string_moduled_scss(source_path: str, load_dir: str):
         syntax=source.name[-4:],  # type: ignore[arg-type]
         load_paths=[module_dir],
     )
+    print(result.error)
     assert result.output
     assert result.output == expect.read_text()
 
@@ -65,5 +68,6 @@ def test_compile_string_moduled_sass():
     result = M.compile_string(
         source.read_text(), syntax="scss", load_paths=[source.parent]
     )
+    print(result.error)
     assert result.output
     assert result.output == expect.read_text()
