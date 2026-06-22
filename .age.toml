@@ -21,7 +21,7 @@ Version {{new_version}}
 ========{{#sameLengthChars}}=@{{new_version}}{{/sameLengthChars}}
 
 :Release date: {{ nowFormat.dateISO }} (Asia/Tokyo)
-:Dart Sass version: 1.101.0
+:Dart Sass version: 1.99.0
 
 Breaking changes
 ----------------
