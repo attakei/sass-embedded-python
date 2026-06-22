@@ -764,7 +764,7 @@ docs-dev = [
 [package.metadata]
 requires-dist = [
     { name = "bbpb", specifier = ">=1.4.2" },
-    { name = "protobuf", specifier = ">=6" },
+    { name = "protobuf", specifier = ">=6.33.0" },
 ]
 
 [package.metadata.requires-dev]
