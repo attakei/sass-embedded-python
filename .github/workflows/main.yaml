@@ -102,7 +102,7 @@ jobs:
       - run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           source $HOME/.local/bin/env
-          git clone https://github.com/attakei-lab/sass-embedded-python /opt/repo
+          git clone -b ${{github.ref_name}} --single-branch ${{github.server_url}}/${{github.repository}} /opt/repo
           cd /opt/repo
           uv run python -m sass_embedded.dart_sass
           uv run pytest
