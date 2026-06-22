@@ -18,7 +18,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@11dd79b4e498d471a9385aa9fb7f62bb5f52a73c  # v4.0.4
         with:
-          aqua_version: v2.53.3
+          aqua_version: v2.60.1
       - name: 'Configure dependencies'
         run: |
           uv sync --frozen --all-extras
