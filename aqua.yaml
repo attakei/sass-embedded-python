@@ -15,4 +15,4 @@ packages:
 - name: evilmartians/lefthook@v2.0.1
 - name: go-task/task@v3.45.4
 - name: protocolbuffers/protobuf/protoc@v33.0
-- name: sass/dart-sass@1.93.2
+- name: sass/dart-sass@1.101.0
