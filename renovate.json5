@@ -9,8 +9,19 @@
     // Run check at daytime on every weekend
     "* 9-21 * * 0,6"
   ],
-  "enabledManagers": [
-    "github-actions",
-    "regex",
+  automerge: true,
+  // Wait 3 days after a release before considering it; lets the broader
+  // ecosystem catch hotfixes before our auto-merge picks the update up.
+  minimumReleaseAge: "3 days",
+  "packageRules": [
+    // NOTE: Workflow's python version must be kept because it is minimum require-python version.
+    {
+      "matchFileNames": [".python-version"],
+      "enabled": false,
+    },
+    {
+      matchUpdateTypes: ["major"],
+      automerge: false,
+    },
   ],
 }
