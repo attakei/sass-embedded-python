@@ -9,8 +9,7 @@ tasks:
     desc: 'Setup workspace'
     cmds:
       - 'uv sync --frozen --all-extras --all-groups'
-      # TODO: It may delete this line
-      # - '{{.RUN_PYTHON}} python -m sass_embedded.sass'
+      - '{{.RUN_PYTHON}} -m sass_embedded.dart_sass'
       - 'lefthook install'
       - task: 'docs:apidoc'
   verify:
