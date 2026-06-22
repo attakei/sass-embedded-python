@@ -1,5 +1,29 @@
-Version 0.1.3
+Version 0.1.4
 =============
+
+:Release date: 2026-06-23 (Asia/Tokyo)
+:Dart Sass version: 1.99.0
+
+Fixes
+-----
+
+* Resolve aarch64 as arm64 when detecting host architecture. [ `#40`_ by `@Crozzers`_, closes `#39`_ ]
+
+Others
+------
+
+* Update bundle Dart Sass.
+* Raise minimum protobuf to 6.33.0 (security).
+* Fix typos in docstrings of compile functions. [ `#37`_ by `@cclauss`_ ]
+
+.. _#37: https://github.com/attakei/sass-embedded-python/pull/37
+.. _#39: https://github.com/attakei/sass-embedded-python/issues/39
+.. _#40: https://github.com/attakei/sass-embedded-python/pull/40
+.. _@Crozzers: https://github.com/Crozzers
+.. _@cclauss: https://github.com/cclauss
+
+ver 0.1.3
+=========
 
 :Release date: 2025-09-28 (Asia/Tokyo)
 :Dart Sass version: 1.91.2

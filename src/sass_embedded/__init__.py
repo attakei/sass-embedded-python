@@ -1,6 +1,6 @@
 """sass-embedded is Dart Sass bindings for Python."""
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 from .simple import compile_directory, compile_file, compile_string
 
