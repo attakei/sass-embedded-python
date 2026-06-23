@@ -1,0 +1,16 @@
+$font-stack: Helvetica, sans-serif;
+$primary-color: #333;
+
+$nocover: theme_option('nocover', false) !default;
+$cover-bg: config('cover-bg', '#111111') !default;
+
+
+body {
+  font: 100% $font-stack;
+  color: $primary-color;
+  background-color: $cover-bg;
+  
+  @if $nocover {
+    width: auto;
+  }
+}
