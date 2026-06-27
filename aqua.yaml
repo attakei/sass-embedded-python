@@ -9,7 +9,7 @@
 #   - all
 registries:
 - type: standard
-  ref: v4.418.0 # renovate: depName=aquaproj/aqua-registry
+  ref: v4.527.0 # renovate: depName=aquaproj/aqua-registry
 packages:
 - name: astral-sh/uv@0.11.24
 - name: evilmartians/lefthook@v2.0.1
