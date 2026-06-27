@@ -88,22 +88,28 @@ jobs:
       - name: 'Run test'
         run: |
           uv run pytest
-  manylinux-test:
+  linux-libc-test:
     needs: 'lint'
     runs-on: 'ubuntu-latest'
     strategy:
+      fail-fast: false
       max-parallel: 4
       matrix:
-        image:
-          - 'quay.io/pypa/manylinux2014_x86_64'
+        include:
+          - { image: 'quay.io/pypa/manylinux_2_28_x86_64', expected_libc: 'gnu'  }
+          - { image: 'quay.io/pypa/musllinux_1_2_x86_64',  expected_libc: 'musl' }
     container:
       image: '${{ matrix.image }}'
     steps:
-      - run: |
+      - uses: actions/checkout@v7
+      - name: 'Run test'
+        env:
+          EXPECTED_OS: 'linux'
+          EXPECTED_ARCH: 'x64'
+          EXPECTED_LIBC: '${{ matrix.expected_libc }}'
+        run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           source $HOME/.local/bin/env
-          git clone https://github.com/attakei-lab/sass-embedded-python /opt/repo
-          cd /opt/repo
           uv run python -m sass_embedded.dart_sass
           uv run pytest
   env-coverage-test:
