@@ -726,6 +726,7 @@ version = "0.1.4"
 source = { editable = "." }
 dependencies = [
     { name = "bbpb" },
+    { name = "packaging" },
     { name = "protobuf", version = "6.33.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
@@ -764,6 +765,7 @@ docs-dev = [
 [package.metadata]
 requires-dist = [
     { name = "bbpb", specifier = ">=1.4.2" },
+    { name = "packaging", specifier = ">=25.0" },
     { name = "protobuf", specifier = ">=6.33.0" },
 ]
 

@@ -16,6 +16,7 @@ from sass_embedded.dart_sass.installer import install
 
 EXPECTED_OS = os.environ.get("EXPECTED_OS")
 EXPECTED_ARCH = os.environ.get("EXPECTED_ARCH")
+EXPECTED_LIBC = os.environ.get("EXPECTED_LIBC")
 
 pytestmark = pytest.mark.skipif(
     not (EXPECTED_OS and EXPECTED_ARCH),
@@ -23,22 +24,31 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+def _expected_libc_suffix() -> str:
+    return "-musl" if EXPECTED_LIBC == "musl" else ""
+
+
 def test_release_init_matches_runner():
     r = P.Release.init()
     assert r.os == EXPECTED_OS
     assert r.arch == EXPECTED_ARCH
+    if EXPECTED_LIBC is not None:
+        assert r.is_musl is (EXPECTED_LIBC == "musl")
 
 
 def test_archive_url_encodes_target():
     r = P.Release.init()
-    assert f"-{EXPECTED_OS}-{EXPECTED_ARCH}." in r.archive_url
+    assert f"-{EXPECTED_OS}-{EXPECTED_ARCH}{_expected_libc_suffix()}." in r.archive_url
 
 
 def test_binary_installation_for_runner():
     install()
     r = P.Release.init()
     bin_dir = r.resolve_dir(P.resolve_bin_base_dir())
-    assert bin_dir.name == f"{DART_SASS_VERSION}-{EXPECTED_OS}-{EXPECTED_ARCH}"
+    assert (
+        bin_dir.name
+        == f"{DART_SASS_VERSION}-{EXPECTED_OS}-{EXPECTED_ARCH}{_expected_libc_suffix()}"
+    )
     e = r.get_executable()
     assert e.dart_vm_path.exists()
     assert e.sass_snapshot_path.exists()

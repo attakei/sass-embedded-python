@@ -27,16 +27,30 @@ def clean():
     shutil.rmtree(resolve_bin_base_dir(), ignore_errors=True)
 
 
-def install(os_name: Optional[str] = None, arch_name: Optional[str] = None):
+def install(
+    os_name: Optional[str] = None,
+    arch_name: Optional[str] = None,
+    is_musl: Optional[bool] = None,
+):
     """Install Dart Sass executable.
 
     :param os_name: Target OS of archives.
     :param arch_name: Target CPU architecture of archives.
+    :param is_musl: Force musl variant on or off (Linux only).
     """
-    if os_name and arch_name:
-        release = Release(os=os_name, arch=arch_name)  # type: ignore[arg-type]
-    else:
-        release = Release.init()
+    base = Release.init()
+    target_os = os_name or base.os
+    target_arch = arch_name or base.arch
+    target_musl = (
+        is_musl
+        if is_musl is not None
+        else (base.is_musl if target_os == base.os else False)
+    )
+    release = Release(
+        os=target_os,  # type: ignore[arg-type]
+        arch=target_arch,  # type: ignore[arg-type]
+        is_musl=target_musl,
+    )
     release_dir = release.resolve_dir(resolve_bin_base_dir())
     logging.debug(f"Find '{release_dir}'")
     if release_dir.exists() and (release_dir / "src").exists():
