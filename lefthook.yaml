@@ -3,19 +3,20 @@
 
 pre-commit:
   parallel: true
+  jobs:
+    - name: 'Python auto-fixes'
+      glob: '*.py'
+      group:
+        piped: true
+        jobs:
+          - name: 'Ruff format'
+            run: 'uv run ruff format {staged_files}'
+          - name: 'Ruff check'
+            run: 'uv run ruff check --fix {staged_files}'
+      exclude:
+        - 'src/**/embedded_sass_pb2.py'
+      stage_fixed: true
   commands:
-    ruff:
-      glob: '*.py'
-      run: 'uv run ruff format {staged_files}'
-      stage_fixed: true
-      exclude:
-        - 'src/**/embedded_sass_pb2.py'
-    ruff-check:
-      glob: '*.py'
-      run: 'uv run ruff check --fix {staged_files}'
-      stage_fixed: true
-      exclude:
-        - 'src/**/embedded_sass_pb2.py'
     ty:
       glob: '*.py'
       exclude:
