@@ -9,7 +9,7 @@ def test_relasename():
     assert r.fullname == f"{DART_SASS_VERSION}-linux-x64"
     bin_dir = r.resolve_dir(P.resolve_bin_base_dir())
     assert bin_dir.name == r.fullname
-    assert bin_dir.parent.name == "_ext"
+    assert bin_dir.parent.name == "_vendor"
 
 
 def test_release_with_musl_suffix():

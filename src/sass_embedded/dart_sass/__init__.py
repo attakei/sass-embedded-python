@@ -141,4 +141,4 @@ class Executable:
 
 def resolve_bin_base_dir() -> Path:
     """Retrieve base directory to install Dart Sass binaries."""
-    return here / "_ext"
+    return here / "_vendor"

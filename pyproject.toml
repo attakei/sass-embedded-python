@@ -65,7 +65,7 @@ docs-dev = [
 [tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["src/sass_embedded/dart_sass/_ext"]
+exclude = ["src/sass_embedded/dart_sass/_vendor"]
 
 [tool.ruff.lint]
 select = ["F", "UP"]
