@@ -19,8 +19,8 @@ EXPECTED_ARCH = os.environ.get("EXPECTED_ARCH")
 EXPECTED_LIBC = os.environ.get("EXPECTED_LIBC")
 
 pytestmark = pytest.mark.skipif(
-    not (EXPECTED_OS and EXPECTED_ARCH),
-    reason="EXPECTED_OS/EXPECTED_ARCH not set",
+    not (EXPECTED_OS and EXPECTED_ARCH and EXPECTED_LIBC),
+    reason="EXPECTED_OS/EXPECTED_ARCH/EXPECTED_LIBC not set",
 )
 
 
@@ -32,8 +32,7 @@ def test_release_init_matches_runner():
     r = P.Release.init()
     assert r.os == EXPECTED_OS
     assert r.arch == EXPECTED_ARCH
-    if EXPECTED_LIBC is not None:
-        assert r.is_musl is (EXPECTED_LIBC == "musl")
+    assert r.is_musl is (EXPECTED_LIBC == "musl")
 
 
 def test_archive_url_encodes_target():

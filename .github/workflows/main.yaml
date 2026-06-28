@@ -102,6 +102,8 @@ jobs:
       image: '${{ matrix.image }}'
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: 'Run test'
         env:
           EXPECTED_OS: 'linux'
@@ -120,15 +122,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { runner: 'ubuntu-latest',    expected_os: 'linux',   expected_arch: 'x64'   }
-          - { runner: 'ubuntu-24.04-arm', expected_os: 'linux',   expected_arch: 'arm64' }
-          - { runner: 'windows-latest',   expected_os: 'windows', expected_arch: 'x64'   }
+          - { runner: 'ubuntu-latest',    expected_os: 'linux',   expected_arch: 'x64',   expected_libc: 'gnu' }
+          - { runner: 'ubuntu-24.04-arm', expected_os: 'linux',   expected_arch: 'arm64', expected_libc: 'gnu' }
+          - { runner: 'windows-latest',   expected_os: 'windows', expected_arch: 'x64',   expected_libc: 'gnu' }
           # TODO: Re-enable when Windows-on-ARM share warrants arch detection work.
           # uv installs x64 Python on windows-11-arm, so platform.machine() reports AMD64
           # under emulation and resolve_arch() returns 'x64' instead of 'arm64'.
           # Reactivate once we add Windows-on-ARM emulation handling (see NOTES_windows-arm.md).
           # - { runner: 'windows-11-arm',   expected_os: 'windows', expected_arch: 'arm64' }
-          - { runner: 'macos-latest',     expected_os: 'macos',   expected_arch: 'arm64' }
+          - { runner: 'macos-latest',     expected_os: 'macos',   expected_arch: 'arm64', expected_libc: 'gnu' }
           # TODO: Re-enable when macOS x64 hosted runner availability stabilizes.
           # macos-13 jobs frequently stay in status=queued for hours because the Intel
           # macOS hosted runner pool is small; timeout-minutes does not cover queue time
@@ -153,6 +155,7 @@ jobs:
         env:
           EXPECTED_OS: ${{ matrix.expected_os }}
           EXPECTED_ARCH: ${{ matrix.expected_arch }}
+          EXPECTED_LIBC: ${{ matrix.expected_libc }}
         run: |
           uv run pytest tests/test_env_dispatch.py -v
   doc-test:

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.request import urlopen
 
-from . import Release, resolve_bin_base_dir
+from . import Release, resolve_arch, resolve_bin_base_dir, resolve_musl, resolve_os
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -38,19 +38,16 @@ def install(
     :param arch_name: Target CPU architecture of archives.
     :param is_musl: Force musl variant on or off (Linux only).
     """
-    base = Release.init()
-    target_os = os_name or base.os
-    target_arch = arch_name or base.arch
-    target_musl = (
-        is_musl
-        if is_musl is not None
-        else (base.is_musl if target_os == base.os else False)
-    )
-    release = Release(
-        os=target_os,  # type: ignore[arg-type]
-        arch=target_arch,  # type: ignore[arg-type]
-        is_musl=target_musl,
-    )
+    if os_name is None and arch_name is None and is_musl is None:
+        release = Release.init()
+    else:
+        if os_name is None:
+            os_name = resolve_os()
+        if arch_name is None:
+            arch_name = resolve_arch()
+        if is_musl is None:
+            is_musl = resolve_musl()
+        release = Release(os=os_name, arch=arch_name, is_musl=is_musl)
     release_dir = release.resolve_dir(resolve_bin_base_dir())
     logging.debug(f"Find '{release_dir}'")
     if release_dir.exists() and (release_dir / "src").exists():
