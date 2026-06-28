@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+from packaging.tags import sys_tags
+
 from .._const import DART_SASS_VERSION
 
 OSName = Literal["android", "linux", "macos", "windows"]
@@ -44,6 +46,13 @@ def resolve_arch() -> ArchName:
     return arch_name  # type: ignore[return-value]
 
 
+def resolve_musl() -> bool:
+    """Detect whether current Python runtime is musl-based."""
+    if platform.system() != "Linux":
+        return False
+    return any("musllinux" in t.platform for t in sys_tags())
+
+
 @dataclass
 class Release:
     """Release data of Dart Sass.
@@ -57,17 +66,29 @@ class Release:
     """Identify of CPU architecture."""
     version: str = DART_SASS_VERSION
     """Versionstring of Dart Sass."""
+    is_musl: bool = False
+    """Whether the target Linux uses musl libc."""
+
+    def __post_init__(self):
+        if self.is_musl and self.os != "linux":
+            raise ValueError(
+                f"is_musl=True is only valid for os='linux', got os={self.os!r}"
+            )
+
+    @property
+    def _libc_suffix(self) -> str:
+        return "-musl" if self.is_musl else ""
 
     @property
     def fullname(self) -> str:
         """Full name of release's directory."""
-        return f"{self.version}-{self.os}-{self.arch}"
+        return f"{self.version}-{self.os}-{self.arch}{self._libc_suffix}"
 
     @property
     def archive_url(self) -> str:
         """URL for archive of GitHub Releases."""
         ext = "zip" if self.os == "windows" else "tar.gz"
-        return f"https://github.com/sass/dart-sass/releases/download/{self.version}/dart-sass-{self.version}-{self.os}-{self.arch}.{ext}"
+        return f"https://github.com/sass/dart-sass/releases/download/{self.version}/dart-sass-{self.version}-{self.os}-{self.arch}{self._libc_suffix}.{ext}"
 
     @property
     def archive_format(self) -> str:
@@ -79,7 +100,8 @@ class Release:
         """Create object with current environment and registered version."""
         os_name = resolve_os()
         arch_name = resolve_arch()
-        return cls(os=os_name, arch=arch_name)
+        is_musl = resolve_musl() if os_name == "linux" else False
+        return cls(os=os_name, arch=arch_name, is_musl=is_musl)
 
     def resolve_dir(self, base_dir: Path):
         """Retrieve full path of release's directory."""

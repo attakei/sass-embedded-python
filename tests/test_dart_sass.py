@@ -12,6 +12,44 @@ def test_relasename():
     assert bin_dir.parent.name == "_ext"
 
 
+def test_release_with_musl_suffix():
+    r = P.Release("linux", "x64", is_musl=True)
+    assert r.fullname == f"{DART_SASS_VERSION}-linux-x64-musl"
+    assert r.archive_url.endswith(
+        f"dart-sass-{DART_SASS_VERSION}-linux-x64-musl.tar.gz"
+    )
+
+
+def test_release_rejects_musl_on_non_linux():
+    with pytest.raises(ValueError):
+        P.Release("macos", "arm64", is_musl=True)
+
+
+def test_release_init_picks_up_musl(monkeypatch):
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(P.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(P, "resolve_arch", lambda: "x64")
+    monkeypatch.setattr(
+        P, "sys_tags", lambda: [SimpleNamespace(platform="musllinux_1_2_x86_64")]
+    )
+    r = P.Release.init()
+    assert r.os == "linux"
+    assert r.is_musl is True
+
+
+def test_release_init_no_musl_on_glibc(monkeypatch):
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(P.platform, "system", lambda: "Linux")
+    monkeypatch.setattr(P, "resolve_arch", lambda: "x64")
+    monkeypatch.setattr(
+        P, "sys_tags", lambda: [SimpleNamespace(platform="manylinux_2_28_x86_64")]
+    )
+    r = P.Release.init()
+    assert r.is_musl is False
+
+
 @pytest.mark.skipif('sys.platform != "linux"')
 def test_linux_release_object():
     r = P.Release.init()

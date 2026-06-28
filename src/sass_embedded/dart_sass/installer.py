@@ -12,7 +12,7 @@ import tempfile
 from pathlib import Path
 from urllib.request import urlopen
 
-from . import Release, resolve_bin_base_dir
+from . import Release, resolve_arch, resolve_bin_base_dir, resolve_musl, resolve_os
 
 logger = logging.getLogger(__name__)
 
@@ -23,16 +23,27 @@ def clean():
     shutil.rmtree(resolve_bin_base_dir(), ignore_errors=True)
 
 
-def install(os_name: str | None = None, arch_name: str | None = None):
+def install(
+    os_name: str | None = None,
+    arch_name: str | None = None,
+    is_musl: bool | None = None,
+):
     """Install Dart Sass executable.
 
     :param os_name: Target OS of archives.
     :param arch_name: Target CPU architecture of archives.
+    :param is_musl: Force musl variant on or off (Linux only).
     """
-    if os_name and arch_name:
-        release = Release(os=os_name, arch=arch_name)  # type: ignore[arg-type]
-    else:
+    if os_name is None and arch_name is None and is_musl is None:
         release = Release.init()
+    else:
+        if os_name is None:
+            os_name = resolve_os()
+        if arch_name is None:
+            arch_name = resolve_arch()
+        if is_musl is None:
+            is_musl = resolve_musl()
+        release = Release(os=os_name, arch=arch_name, is_musl=is_musl)
     release_dir = release.resolve_dir(resolve_bin_base_dir())
     logging.debug(f"Find '{release_dir}'")
     if release_dir.exists() and (release_dir / "src").exists():
