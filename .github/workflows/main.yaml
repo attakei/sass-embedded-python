@@ -178,3 +178,98 @@ jobs:
         run: |
           task docs:build-linkcheck
           task docs:build-dirhtml
+  build-platform-wheel:
+    needs: 'lint'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        platform:
+          - 'win_amd64'
+          - 'manylinux_2_17_x86_64'
+          - 'manylinux_2_17_aarch64'
+          - 'musllinux_1_2_x86_64'
+          - 'musllinux_1_2_aarch64'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/aquaproj-aqua
+          key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
+          restore-keys: |
+            v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
+      - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
+        with:
+          aqua_version: v2.60.1
+      - name: 'Build wheel'
+        run: |
+          uv sync
+          BUILD_FOR_PLATFORM=${{ matrix.platform }} uv build --wheel
+      - uses: actions/upload-artifact@v7
+        with:
+          name: 'wheel-${{ matrix.platform }}'
+          path: dist
+  verify-wheel:
+    needs:
+      - 'python-test'
+      - 'os-smoke-test'
+      - 'linux-libc-test'
+      - 'env-coverage-test'
+      - 'build-platform-wheel'
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: 'manylinux_2_17_x86_64',  runner: 'ubuntu-latest',    container: 'quay.io/pypa/manylinux_2_28_x86_64',  expected_os: 'linux',   expected_arch: 'x64',   expected_libc: 'gnu'  }
+          - { platform: 'manylinux_2_17_aarch64', runner: 'ubuntu-24.04-arm', container: 'quay.io/pypa/manylinux_2_28_aarch64', expected_os: 'linux',   expected_arch: 'arm64', expected_libc: 'gnu'  }
+          - { platform: 'musllinux_1_2_x86_64',   runner: 'ubuntu-latest',    container: 'quay.io/pypa/musllinux_1_2_x86_64',   expected_os: 'linux',   expected_arch: 'x64',   expected_libc: 'musl' }
+          - { platform: 'musllinux_1_2_aarch64',  runner: 'ubuntu-24.04-arm', container: 'quay.io/pypa/musllinux_1_2_aarch64',  expected_os: 'linux',   expected_arch: 'arm64', expected_libc: 'musl' }
+          - { platform: 'win_amd64',              runner: 'windows-latest',   container: '',                                    expected_os: 'windows', expected_arch: 'x64',   expected_libc: 'gnu'  }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v8
+        with:
+          name: 'wheel-${{ matrix.platform }}'
+          path: dist
+      - name: 'Install uv (Linux container)'
+        if: ${{ matrix.container != '' }}
+        shell: bash
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
+        if: ${{ matrix.container == '' }}
+        with:
+          aqua_version: v2.60.1
+      - name: 'Build venv and install wheel'
+        shell: bash
+        run: |
+          uv venv .wheel-venv --python 3.10
+          uv pip install --python .wheel-venv --no-cache pytest
+          uv pip install --python .wheel-venv --no-cache dist/*.whl
+      - name: 'Verify bundled binary present and runnable'
+        shell: bash
+        run: |
+          if [ -f .wheel-venv/bin/activate ]; then
+            source .wheel-venv/bin/activate
+          else
+            source .wheel-venv/Scripts/activate
+          fi
+          python tools/verify-wheel.py
+      - name: 'Run pytest against wheel-installed package'
+        shell: bash
+        env:
+          EXPECTED_OS: ${{ matrix.expected_os }}
+          EXPECTED_ARCH: ${{ matrix.expected_arch }}
+          EXPECTED_LIBC: ${{ matrix.expected_libc }}
+        run: |
+          if [ -f .wheel-venv/bin/activate ]; then
+            source .wheel-venv/bin/activate
+          else
+            source .wheel-venv/Scripts/activate
+          fi
+          python -m pytest tests/
