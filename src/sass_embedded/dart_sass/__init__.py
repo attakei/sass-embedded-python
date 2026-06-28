@@ -9,12 +9,9 @@ import logging
 import platform
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from .._const import DART_SASS_VERSION
-
-if TYPE_CHECKING:
-    pass
 
 OSName = Literal["android", "linux", "macos", "windows"]
 ArchName = Literal["arm", "arm64", "ia32", "riscv64", "x64"]
@@ -41,9 +38,9 @@ def resolve_arch() -> ArchName:
         arch_name = "x64"
     if arch_name.startswith("arm") and arch_name != "arm64":
         arch_name = "arm"
-    if arch_name == 'aarch64':
+    if arch_name == "aarch64":
         # see https://github.com/attakei/sass-embedded-python/issues/39
-        arch_name = 'arm64'
+        arch_name = "arm64"
     return arch_name  # type: ignore[return-value]
 
 

@@ -10,13 +10,9 @@ import logging
 import shutil
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
 from urllib.request import urlopen
 
 from . import Release, resolve_bin_base_dir
-
-if TYPE_CHECKING:
-    from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +23,7 @@ def clean():
     shutil.rmtree(resolve_bin_base_dir(), ignore_errors=True)
 
 
-def install(os_name: Optional[str] = None, arch_name: Optional[str] = None):
+def install(os_name: str | None = None, arch_name: str | None = None):
     """Install Dart Sass executable.
 
     :param os_name: Target OS of archives.
