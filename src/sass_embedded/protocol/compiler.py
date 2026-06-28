@@ -12,8 +12,6 @@ from ..dart_sass import Release
 from .embedded_sass_pb2 import OutboundMessage
 
 if TYPE_CHECKING:
-    from typing import Optional
-
     from ..dart_sass import Executable
     from .embedded_sass_pb2 import InboundMessage
 
@@ -43,7 +41,7 @@ class Host:
     """Host process of compiler."""
 
     executable: Executable
-    _proc: Optional[subprocess.Popen]
+    _proc: subprocess.Popen | None
     _id: int
 
     def __init__(self):

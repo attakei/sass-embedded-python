@@ -15,10 +15,7 @@ import logging
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Generic, Literal, TypeVar, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Optional
+from typing import Generic, Literal, TypeVar
 
 from .dart_sass import Executable, Release
 
@@ -75,7 +72,7 @@ class CompileOptions:
 
     :ref: https://sass-lang.com/documentation/cli/dart-sass/#style
     """
-    sourcemap_options: Optional[SourceMapOptions] = None
+    sourcemap_options: SourceMapOptions | None = None
     """Generating options for source-map."""
 
     def get_cli_arguments(self, use_stdout: bool = False) -> list[str]:
@@ -125,15 +122,15 @@ class CLI:
 @dataclass
 class Result(Generic[T]):
     ok: bool
-    error: Optional[str] = None
-    options: Optional[CompileOptions] = None
-    output: Optional[T] = None
+    error: str | None = None
+    options: CompileOptions | None = None
+    output: T | None = None
 
 
 def compile_string(
     source: str,
     syntax: Syntax = "scss",
-    load_paths: Optional[list[Path]] = None,
+    load_paths: list[Path] | None = None,
     style: OutputStyle = "expanded",
     embed_sourcemap: bool = False,
     embed_sources: bool = False,
@@ -170,7 +167,7 @@ def compile_string(
 def compile_file(
     source: Path,
     dest: Path,
-    load_paths: Optional[list[Path]] = None,
+    load_paths: list[Path] | None = None,
     style: OutputStyle = "expanded",
     no_sourcemap: bool = False,
     embed_sourcemap: bool = False,
@@ -212,7 +209,7 @@ def compile_file(
 def compile_directory(
     source: Path,
     dest: Path,
-    load_paths: Optional[list[Path]] = None,
+    load_paths: list[Path] | None = None,
     style: OutputStyle = "expanded",
     no_sourcemap: bool = False,
     embed_sourcemap: bool = False,

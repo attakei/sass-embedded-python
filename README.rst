@@ -120,7 +120,7 @@ Works as alternative to ``libsass-python``.
 Support
 =======
 
-This project supports only Python 3.9+.
+This project supports only Python 3.10+.
 
 License
 =======

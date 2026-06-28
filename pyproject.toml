@@ -6,7 +6,7 @@ readme = "README.rst"
 authors = [
     { name = "Kazuya Takei", email = "myself@attakei.net" }
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -16,7 +16,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -66,6 +65,12 @@ docs-dev = [
 
 [tool.hatch.build.targets.sdist]
 exclude = ["src/sass_embedded/dart_sass/_ext"]
+
+[tool.ruff.lint]
+select = ["F", "UP"]
+exclude = [
+    "src/**/embedded_sass_pb2.*",
+]
 
 [tool.ruff.format]
 exclude = [

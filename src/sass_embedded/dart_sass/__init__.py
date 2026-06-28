@@ -9,14 +9,11 @@ import logging
 import platform
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from packaging.tags import sys_tags
 
 from .._const import DART_SASS_VERSION
-
-if TYPE_CHECKING:
-    pass
 
 OSName = Literal["android", "linux", "macos", "windows"]
 ArchName = Literal["arm", "arm64", "ia32", "riscv64", "x64"]
