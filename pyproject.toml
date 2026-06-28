@@ -65,6 +65,12 @@ docs-dev = [
 [tool.hatch.build.targets.sdist]
 exclude = ["src/sass_embedded/dart_sass/_ext"]
 
+[tool.ruff.lint]
+select = ["F", "UP"]
+exclude = [
+    "src/**/embedded_sass_pb2.*",
+]
+
 [tool.ruff.format]
 exclude = [
     "embedded_sass_pb2.py",
