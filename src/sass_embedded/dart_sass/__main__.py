@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--clean", action="store_true", default=False)
 parser.add_argument("--os", default=None, type=str)
 parser.add_argument("--arch", default=None, type=str)
-parser.add_argument("--musl", action="store_true", default=False)
+parser.add_argument("--musl", action="store_const", const=True, default=None)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -19,6 +19,8 @@ if args.clean:
     installer.clean()
 if args.os and args.arch:
     installer.install(os_name=args.os, arch_name=args.arch, is_musl=args.musl)
+elif args.musl is not None:
+    installer.install(is_musl=args.musl)
 else:
     installer.install()
 logger.debug("END: Install dart-sass by CLI")
