@@ -57,4 +57,4 @@ class CustomHook(BuildHookInterface):
         ]
         if release["is_musl"]:
             cmd.append("--musl")
-        subprocess.run(cmd, cwd=here / "src")
+        subprocess.run(cmd, cwd=here / "src", check=True)
