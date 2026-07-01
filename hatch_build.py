@@ -55,6 +55,5 @@ class CustomHook(BuildHookInterface):
             "--arch",
             release["arch"],
         ]
-        if release["is_musl"]:
-            cmd.append("--musl")
+        cmd.append("--musl" if release["is_musl"] else "--no-musl")
         subprocess.run(cmd, cwd=here / "src", check=True)
