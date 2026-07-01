@@ -13,10 +13,12 @@ from pathlib import Path
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 RELEASE_TARGET = {
-    "win_amd64": {"os": "windows", "arch": "x64"},
-    "win_arm64": {"os": "windows", "arch": "arm64"},
-    "manylinux_2_17_x86_64": {"os": "linux", "arch": "x64"},
-    "manylinux_2_17_aarch64": {"os": "linux", "arch": "arm64"},
+    "win_amd64": {"os": "windows", "arch": "x64", "is_musl": False},
+    "win_arm64": {"os": "windows", "arch": "arm64", "is_musl": False},
+    "manylinux_2_17_x86_64": {"os": "linux", "arch": "x64", "is_musl": False},
+    "manylinux_2_17_aarch64": {"os": "linux", "arch": "arm64", "is_musl": False},
+    "musllinux_1_2_x86_64": {"os": "linux", "arch": "x64", "is_musl": True},
+    "musllinux_1_2_aarch64": {"os": "linux", "arch": "arm64", "is_musl": True},
 }
 
 here = Path(__file__).parent
@@ -43,5 +45,15 @@ class CustomHook(BuildHookInterface):
         build_data["tag"] = f"{py_tag}-{abi_tag}-{platform}"
 
         # Fetch Dart Sass executables for platform.
-        cmd = f"python -m sass_embedded.dart_sass --clean --os {release['os']} --arch {release['arch']}"
-        subprocess.run(cmd.split(), cwd=here / "src")
+        cmd = [
+            "python",
+            "-m",
+            "sass_embedded.dart_sass",
+            "--clean",
+            "--os",
+            release["os"],
+            "--arch",
+            release["arch"],
+        ]
+        cmd.append("--musl" if release["is_musl"] else "--no-musl")
+        subprocess.run(cmd, cwd=here / "src", check=True)
