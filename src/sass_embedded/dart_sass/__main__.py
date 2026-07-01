@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--clean", action="store_true", default=False)
 parser.add_argument("--os", default=None, type=str)
 parser.add_argument("--arch", default=None, type=str)
-parser.add_argument("--musl", action="store_const", const=True, default=None)
+parser.add_argument("--musl", action=argparse.BooleanOptionalAction, default=None)
 
 logging.basicConfig(level=logging.DEBUG)
 
