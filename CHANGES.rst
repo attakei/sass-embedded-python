@@ -7,14 +7,20 @@ Version 0.1.5
 Breaking changes
 ----------------
 
+* Drop Python 3.9 support.
+
 Features
 --------
 
-Fixes
------
+* Support musllinux (musl-based Linux distributions) by providing prebuilt wheels
+  and detecting the musl variant at install time.
+* Support Python 3.14.
+* Add ``--musl`` / ``--no-musl`` flag to the dart-sass installer CLI to control musl variant selection explicitly.
 
 Others
 ------
+
+* Enable Ruff ``UP`` / ``F`` lint rules and apply fixes.
 
 ver 0.1.4
 =========
