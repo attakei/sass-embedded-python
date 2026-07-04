@@ -1,5 +1,23 @@
-Version 0.1.4
+Version 0.1.5
 =============
+
+:Release date: 2026-07-05 (Asia/Tokyo)
+:Dart Sass version: 1.99.0
+
+Breaking changes
+----------------
+
+Features
+--------
+
+Fixes
+-----
+
+Others
+------
+
+ver 0.1.4
+=========
 
 :Release date: 2026-06-23 (Asia/Tokyo)
 :Dart Sass version: 1.99.0
