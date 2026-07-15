@@ -12,7 +12,8 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved",
     "License :: OSI Approved :: Apache Software License",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -23,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 dependencies = [
     "bbpb>=1.4.2",
