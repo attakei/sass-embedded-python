@@ -22,7 +22,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Configure dependencies'
         run: |
           uv sync --frozen --all-extras
@@ -52,7 +52,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Configure workspace'
         run: |
           echo ${{ matrix.python }} > .python-version
@@ -80,7 +80,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Configure workspace'
         run: |
           uv sync --frozen --all-groups --all-extras
@@ -147,7 +147,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Configure workspace'
         run: |
           uv sync --frozen
@@ -170,7 +170,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Configure dependencies'
         run: |
           task setup-dev
@@ -201,7 +201,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Build wheel'
         run: |
           uv sync
@@ -247,7 +247,7 @@ jobs:
       - uses: aquaproj/aqua-installer@96a9bc20066c5bf5e275b41019cfc165b25f4e2e  # v4.0.5
         if: ${{ matrix.container == '' }}
         with:
-          aqua_version: v2.60.1
+          aqua_version: v2.61.0
       - name: 'Build venv and install wheel'
         shell: bash
         run: |
