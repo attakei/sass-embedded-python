@@ -14,5 +14,5 @@ packages:
 - name: astral-sh/uv@0.13.1
 - name: evilmartians/lefthook@v2.2.2
 - name: go-task/task@v3.54.0
-- name: protocolbuffers/protobuf/protoc@v33.6
+- name: protocolbuffers/protobuf/protoc@v36.2
 - name: sass/dart-sass@1.99.0
