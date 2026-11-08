@@ -24,7 +24,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
         with:
-          aqua_version: v2.66.0
+          aqua_version: v2.66.1
       - name: Build distributes
         run: |
           uv build
@@ -54,7 +54,7 @@ jobs:
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
       - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
         with:
-          aqua_version: v2.66.0
+          aqua_version: v2.66.1
       - name: Build wheel
         run: |
           uv sync
