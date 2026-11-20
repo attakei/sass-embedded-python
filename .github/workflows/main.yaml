@@ -13,7 +13,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -43,7 +43,7 @@ jobs:
           - '3.14'
         workspace: ['locked', 'latest']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -71,7 +71,7 @@ jobs:
           - 'windows-latest'
           - 'macos-latest'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -138,7 +138,7 @@ jobs:
           # macOS x64 dispatch is still covered indirectly by tests/test_dart_sass.py.
           # - { runner: 'macos-13',         expected_os: 'macos',   expected_arch: 'x64'   }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/cache@v5
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -161,7 +161,7 @@ jobs:
   doc-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -192,7 +192,7 @@ jobs:
           - 'musllinux_1_2_x86_64'
           - 'musllinux_1_2_aarch64'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/cache@v4
         with:
           path: ~/.local/share/aquaproj-aqua
@@ -233,7 +233,7 @@ jobs:
           # - { platform: 'musllinux_1_2_aarch64',  runner: 'ubuntu-24.04-arm', container: 'quay.io/pypa/musllinux_1_2_aarch64',  expected_os: 'linux',   expected_arch: 'arm64', expected_libc: 'musl' }
           - { platform: 'win_amd64',              runner: 'windows-latest',   container: '',                                    expected_os: 'windows', expected_arch: 'x64',   expected_libc: 'gnu'  }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           name: 'wheel-${{ matrix.platform }}'
