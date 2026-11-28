@@ -20,7 +20,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Configure dependencies'
@@ -50,7 +50,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Configure workspace'
@@ -78,7 +78,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Configure workspace'
@@ -145,7 +145,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Configure workspace'
@@ -168,7 +168,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Configure dependencies'
@@ -199,7 +199,7 @@ jobs:
           key: v2-aqua-installer-${{runner.os}}-${{runner.arch}}-${{hashFiles('aqua.yaml')}}
           restore-keys: |
             v2-aqua-installer-${{runner.os}}-${{runner.arch}}-
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         with:
           aqua_version: v2.66.1
       - name: 'Build wheel'
@@ -244,7 +244,7 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - uses: aquaproj/aqua-installer@611554c6f0137ba41c8dd15aca8bee82504ea461  # v4.1.1
+      - uses: aquaproj/aqua-installer@b8be739961814ee66b9e0d505f4d5de0d2eff047  # v4.1.2
         if: ${{ matrix.container == '' }}
         with:
           aqua_version: v2.66.1
